@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión — Ukaro{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4"
+     style="background-color: var(--surface-body-dark);">
+    <div class="w-full max-w-md">
+
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <h1 style="font-family: var(--font-display); font-weight: 800; font-size: 2rem; color: var(--color-primary-400);">
+                Ukaro
+            </h1>
+            <p style="color: var(--gray-400);" class="mt-2 text-sm">
+                Ukarasoft Technology
+            </p>
+        </div>
+
+        <!-- Formulario -->
+        <div style="background-color: var(--surface-card-dark); border: 1px solid rgba(255,255,255,0.08);"
+             class="rounded-xl p-8 shadow-lg">
+
+            <h2 class="text-lg font-semibold mb-6" style="color: var(--gray-100);">
+                Iniciar sesión
+            </h2>
+
+            {% if error %}
+            <div class="badge-error rounded-lg px-4 py-3 text-sm mb-4">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="post" class="flex flex-col gap-4">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-sm font-medium mb-1.5" style="color: var(--gray-300);">
+                        Usuario
+                    </label>
+                    <input type="text"
+                           name="username"
+                           autocomplete="username"
+                           required
+                           class="form-input"
+                           style="background-color: var(--surface-body-dark); color: var(--gray-100); border-color: rgba(255,255,255,0.12);">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1.5" style="color: var(--gray-300);">
+                        Contraseña
+                    </label>
+                    <input type="password"
+                           name="password"
+                           autocomplete="current-password"
+                           required
+                           class="form-input"
+                           style="background-color: var(--surface-body-dark); color: var(--gray-100); border-color: rgba(255,255,255,0.12);">
+                </div>
+
+                <button type="submit" class="btn-primary w-full justify-center mt-2">
+                    Ingresar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

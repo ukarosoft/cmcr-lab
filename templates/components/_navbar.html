@@ -1,0 +1,47 @@
+{% load static %}
+<nav class="navbar px-4 py-3 flex items-center justify-between shadow-md"
+     x-data="{ dark: localStorage.getItem('theme') === 'dark' }"
+     x-init="dark ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')">
+
+    <div class="flex items-center gap-3">
+        <div class="w-7 h-7 bg-white/10 rounded-lg flex items-center justify-center">
+            <img src="{% static 'img/logo.svg' %}" alt="Logo Ukaro" class="w-5 h-5">
+        </div>
+        <span style="font-family: var(--font-heading); font-weight: 800; font-size: 1.1rem; color: white;">
+            Ukaro
+        </span>
+    </div>
+
+    <div class="flex items-center gap-4">
+        <span class="text-sm text-white/80">
+            {{ request.user.get_full_name|default:request.user.username }}
+        </span>
+
+        <!-- Dark mode toggle -->
+        <button
+            @click="
+                dark = !dark;
+                dark ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', dark ? 'dark' : 'light');
+            "
+            class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+            :aria-label="dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+            :title="dark ? 'Modo claro' : 'Modo oscuro'">
+            <!-- Sol (modo claro) -->
+            <svg x-show="dark" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 100 10A5 5 0 0012 7z"/>
+            </svg>
+            <!-- Luna (modo oscuro) -->
+            <svg x-show="!dark" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
+        </button>
+
+        <a href="{% url 'core:logout' %}"
+           class="text-sm text-white/70 hover:text-white transition-colors">
+            Salir
+        </a>
+    </div>
+</nav>

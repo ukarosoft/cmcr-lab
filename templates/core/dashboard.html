@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — Ukaro{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include 'components/_sidebar.html' %}
+
+    <div class="flex-1 p-8">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold" style="font-family: var(--font-display); color: var(--gray-900);">
+                Dashboard
+            </h1>
+            <p class="text-sm mt-1" style="color: var(--gray-500);">
+                Bienvenido, {{ request.user.get_full_name|default:request.user.username }}
+            </p>
+        </div>
+
+        <!-- Tarjetas de resumen -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card">
+                <p class="text-sm font-medium" style="color: var(--gray-500);">Organización</p>
+                <p class="text-xl font-bold mt-1" style="color: var(--gray-900);">
+                    {% if request.tenant %}
+                        {{ request.tenant.name }}
+                    {% else %}
+                        Super Admin
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="card">
+                <p class="text-sm font-medium" style="color: var(--gray-500);">Rol</p>
+                <p class="text-xl font-bold mt-1" style="color: var(--gray-900);">
+                    {{ request.user.get_role_display }}
+                </p>
+            </div>
+
+            <div class="card">
+                <p class="text-sm font-medium" style="color: var(--gray-500);">Estado</p>
+                <span class="badge-success text-sm font-medium px-2 py-1 rounded-full inline-block mt-1">
+                    Activo
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

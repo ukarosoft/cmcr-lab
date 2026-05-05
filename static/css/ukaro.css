@@ -1,0 +1,448 @@
+/* ================================================================
+   Ukarasoft Technology — Sistema de Diseño Oficial v2.0
+   Variables CSS + componentes base. Sin hardcodear colores fuera.
+   ================================================================ */
+
+/* ----------------------------------------------------------------
+   MODO CLARO (defecto)
+   ---------------------------------------------------------------- */
+:root {
+    /* Tipografía */
+    --font-heading: 'Outfit', system-ui, sans-serif;
+    --font-display: 'Outfit', system-ui, sans-serif; /* alias */
+    --font-body:    'Inter', system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+    /* Escala tipográfica */
+    --text-xs:   0.75rem;
+    --text-sm:   0.875rem;
+    --text-base: 1rem;
+    --text-lg:   1.125rem;
+    --text-xl:   1.25rem;
+    --text-2xl:  1.5rem;
+    --text-3xl:  1.875rem;
+    --text-4xl:  2.25rem;
+
+    /* Paleta Primaria — Azul Ucaro */
+    --color-primary-900: #0B3D91;   /* Noche Digital */
+    --color-primary-700: #1558C0;
+    --color-primary-600: #1E7FC8;   /* Cielo Ucaro */
+    --color-primary-400: #5BB8E8;   /* Brisa Digital */
+    --color-primary-100: #DBEEFF;
+    --color-primary:     #1E7FC8;   /* alias semántico */
+
+    /* Paleta Secundaria — Verde Ucaro */
+    --color-secondary-700: #1A5C3A; /* Ucaro Profundo */
+    --color-secondary-500: #2E9E65; /* Fronda Verde */
+    --color-secondary-200: #A7F3D0;
+    --color-secondary:     #2E9E65; /* alias semántico */
+
+    /* Colores semánticos con escala */
+    --color-success:     #2E9E65;
+    --color-success-600: #1A5C3A;
+    --color-warning:     #F59E0B;
+    --color-warning-600: #D97706;
+    --color-danger:      #EF4444;
+    --color-error:       #EF4444; /* alias */
+    --color-danger-600:  #DC2626;
+    --color-info:        #1E7FC8;
+    --color-info-600:    #1558C0;
+
+    /* Superficies — cambian automáticamente con dark mode */
+    --surface-body:    #F5F7FA;     /* Luz del Llano */
+    --surface-card:    #FFFFFF;
+    --surface-sidebar: #0B1E30;
+    --surface-modal:   #FFFFFF;
+    --surface-input:   #FFFFFF;
+
+    /* Texto */
+    --text-primary:   #0F172A;
+    --text-secondary: #64748B;
+    --text-muted:     #94A3B8;
+    --text-inverse:   #FFFFFF;
+    --text-heading:   #0B3D91;
+
+    /* Bordes */
+    --border-default: #E2E8F0;
+    --border-focus:   #1E7FC8;
+    --border-muted:   #F1F5F9;
+
+    /* Overlay (modales, drawers) */
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+
+    /* Grises */
+    --gray-50:  #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-400: #9CA3AF;
+    --gray-500: #6B7280;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --gray-800: #1F2937;
+    --gray-900: #111827;
+
+    /* Bordes redondeados */
+    --radius-xs: 0.125rem;
+    --radius-sm: 0.25rem;
+    --radius:    0.5rem;
+    --radius-md: 0.5rem;   /* alias */
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-full: 9999px;
+
+    /* Sombras */
+    --shadow-sm: 0 1px 2px 0 rgba(0,0,0,.05);
+    --shadow:    0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.1);
+
+    /* Transiciones */
+    --transition-fast:   100ms ease;
+    --transition-base:   150ms ease;
+    --transition-slow:   300ms ease;
+}
+
+/* ----------------------------------------------------------------
+   MODO OSCURO — se activa con la clase .dark en <html>
+   ---------------------------------------------------------------- */
+html.dark {
+    --surface-body:    #0D1B2A;     /* Raíz Oscura */
+    --surface-card:    #132236;
+    --surface-sidebar: #0B1E30;
+    --surface-modal:   #132236;
+    --surface-input:   #1A2F45;
+
+    --text-primary:   #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-muted:     #64748B;
+    --text-heading:   #5BB8E8;      /* Brisa Digital en dark */
+
+    --border-default: #1E3A5F;
+    --border-focus:   #5BB8E8;
+    --border-muted:   #132236;
+
+    --color-primary:  #5BB8E8;      /* Brisa Digital como primario en dark */
+}
+
+/* ----------------------------------------------------------------
+   GOOGLE FONTS
+   ---------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ----------------------------------------------------------------
+   RESET Y BASE
+   ---------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--surface-body);
+    color: var(--text-primary);
+    line-height: 1.6;
+    transition: background-color var(--transition-slow), color var(--transition-slow);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--text-heading);
+    line-height: 1.25;
+}
+
+/* ----------------------------------------------------------------
+   BOTONES
+   ---------------------------------------------------------------- */
+.btn-primary {
+    background-color: var(--color-primary-600);
+    color: var(--text-inverse);
+    padding: .5rem 1.25rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    min-height: 44px;
+    transition: background-color var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+}
+.btn-primary:hover  { background-color: var(--color-primary-900); }
+.btn-primary:focus  { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.btn-primary:active { transform: scale(.98); }
+
+.btn-secondary {
+    background-color: var(--color-secondary-500);
+    color: var(--text-inverse);
+    padding: .5rem 1.25rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    min-height: 44px;
+    transition: background-color var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+}
+.btn-secondary:hover { background-color: var(--color-secondary-700); }
+.btn-secondary:focus { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+
+.btn-ghost {
+    background-color: transparent;
+    color: var(--color-primary-600);
+    padding: .5rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: var(--text-sm);
+    min-height: 44px;
+    border: 1px solid var(--border-default);
+    transition: background-color var(--transition-base), border-color var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn-ghost:hover { background-color: var(--color-primary-100); border-color: var(--border-focus); }
+
+.btn-danger {
+    background-color: var(--color-danger-600);
+    color: var(--text-inverse);
+    padding: .5rem 1.25rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    min-height: 44px;
+    transition: background-color var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    border: none;
+}
+.btn-danger:hover { background-color: var(--color-danger); }
+
+/* ----------------------------------------------------------------
+   CARDS
+   ---------------------------------------------------------------- */
+.card {
+    background-color: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-default);
+    padding: 1.25rem;
+    transition: background-color var(--transition-slow);
+}
+
+.card-glass {
+    background-color: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-lg);
+}
+
+/* ----------------------------------------------------------------
+   FORMULARIOS
+   ---------------------------------------------------------------- */
+.input-base {
+    background-color: var(--surface-input);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius);
+    padding: .5rem .75rem;
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+.input-base:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(30,127,200,.15);
+}
+.input-base::placeholder { color: var(--text-muted); }
+
+/* alias para compatibilidad */
+.form-input { all: unset; }
+.form-input { @extend .input-base; }
+
+.label-base {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: .375rem;
+}
+
+.form-error {
+    font-size: var(--text-xs);
+    color: var(--color-danger);
+    margin-top: .25rem;
+}
+
+/* ----------------------------------------------------------------
+   TABLAS
+   ---------------------------------------------------------------- */
+.th-base {
+    padding: .75rem 1rem;
+    text-align: left;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+    background-color: var(--surface-body);
+    border-bottom: 1px solid var(--border-default);
+}
+
+.td-base {
+    padding: .75rem 1rem;
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-muted);
+    vertical-align: middle;
+}
+
+/* ----------------------------------------------------------------
+   TIPOGRAFÍA SEMÁNTICA
+   ---------------------------------------------------------------- */
+.text-title {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--text-heading);
+    line-height: 1.25;
+}
+
+.text-subtitle {
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* ----------------------------------------------------------------
+   LAYOUT — NAVBAR Y SIDEBAR
+   ---------------------------------------------------------------- */
+.navbar {
+    background-color: var(--color-primary-900);
+    color: var(--text-inverse);
+}
+
+.sidebar {
+    background-color: var(--surface-sidebar);
+    color: var(--gray-100);
+    transition: background-color var(--transition-slow);
+}
+
+/* ----------------------------------------------------------------
+   BADGES
+   ---------------------------------------------------------------- */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: .125rem .625rem;
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: 500;
+}
+
+.badge-success { background-color: var(--color-secondary-200); color: var(--color-secondary-700); }
+.badge-info    { background-color: var(--color-primary-100);   color: var(--color-primary-900);  }
+.badge-warning { background-color: #FEF3C7; color: #92400E; }
+.badge-error   { background-color: #FEE2E2; color: #991B1B; }
+.badge-danger  { background-color: #FEE2E2; color: #991B1B; }
+.badge-neutral { background-color: var(--gray-100); color: var(--gray-700); }
+
+/* ----------------------------------------------------------------
+   ALERTAS / MENSAJES
+   ---------------------------------------------------------------- */
+.alert {
+    padding: .875rem 1rem;
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    border-left: 4px solid transparent;
+    margin-bottom: 1rem;
+}
+.alert-success { background-color: #D1FAE5; border-color: var(--color-success); color: #065F46; }
+.alert-warning { background-color: #FEF3C7; border-color: var(--color-warning); color: #92400E; }
+.alert-error   { background-color: #FEE2E2; border-color: var(--color-danger);  color: #991B1B; }
+.alert-info    { background-color: #DBEFFE; border-color: var(--color-info);    color: #1E40AF; }
+
+/* ----------------------------------------------------------------
+   SPINNER / HTMX INDICATOR
+   ---------------------------------------------------------------- */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: inline-block; }
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--border-default);
+    border-top-color: var(--color-primary-600);
+    border-radius: var(--radius-full);
+    animation: spin 600ms linear infinite;
+    display: inline-block;
+}
+
+/* ----------------------------------------------------------------
+   ACCESIBILIDAD
+   ---------------------------------------------------------------- */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
+
+/* Respeta preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
+
+/* ----------------------------------------------------------------
+   DARK MODE HELPERS
+   ---------------------------------------------------------------- */
+html.dark .card {
+    background-color: var(--surface-card);
+    border-color: var(--border-default);
+}
+
+html.dark .input-base {
+    background-color: var(--surface-input);
+    border-color: var(--border-default);
+    color: var(--text-primary);
+}
+
+html.dark .badge-neutral {
+    background-color: var(--surface-sidebar);
+    color: var(--text-secondary);
+}

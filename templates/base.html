@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ukaro{% endblock %}</title>
+
+    <!-- Fuentes oficiales Ukarasoft -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CDN (solo dev — en producción reemplazar con build local) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Sistema de diseño Ukarasoft -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/ukaro.css' %}">
+
+    <!-- HTMX 2.0.4 — con SRI para proteger integridad del script -->
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"
+            integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+            crossorigin="anonymous"
+            defer></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full" style="background-color: var(--surface-body-light); font-family: var(--font-body);">
+
+    {% if user.is_authenticated %}
+        {% include 'components/_navbar.html' %}
+    {% endif %}
+
+    <!-- Mensajes -->
+    {% include 'components/_messages.html' %}
+
+    <!-- Contenido principal -->
+    <main id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Alpine.js 3.14.1 — SIEMPRE al final del body, NUNCA inline -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"
+            integrity="sha384-NeRMBSgCuXx5GKYBVRpkp5kSJzEMCJWHfBFAVsHBH3M89NaTrqMpvUx3EDk8XZj"
+            crossorigin="anonymous"
+            defer></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
