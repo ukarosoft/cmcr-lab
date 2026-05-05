@@ -22,6 +22,8 @@ class TenantMiddleware:
         user = request.user
 
         if user.is_superadmin or user.is_superuser:
+            if user.organization:
+                request.tenant = user.organization
             return self.get_response(request)
 
         if not user.organization:
