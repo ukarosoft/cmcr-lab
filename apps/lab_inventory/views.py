@@ -4,9 +4,11 @@ from django.db.models import Sum, Count, Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views.generic import (
     ListView, CreateView, UpdateView, DeleteView, DetailView,
 )
+from apps.core.decorators import role_required, tenant_required
 from .models import (
     Category, UnitOfMeasure, Supplier, Supply,
     Reagent, ReagentItem, ProductionOrder, StockMovement,
@@ -18,9 +20,26 @@ from .forms import (
 )
 
 
+# ────────────── Mixins de permisos ──────────────
+
+class StaffOrAboveMixin:
+    """Permite acceso a staff, manager, admin y superadmin."""
+    @method_decorator(role_required('admin', 'manager', 'staff'))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+
+class AdminOrAboveMixin:
+    """Solo admin, manager y superadmin pueden crear/editar/eliminar."""
+    @method_decorator(role_required('admin', 'manager'))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+
 # ────────────── Dashboard ──────────────
 
 @login_required
+@role_required('admin', 'manager', 'staff')
 def dashboard(request):
     tenant = request.tenant
     supplies = Supply.objects.for_tenant(tenant)
@@ -57,7 +76,7 @@ def dashboard(request):
 
 # ────────────── Categorías ──────────────
 
-class CategoryListView(ListView):
+class CategoryListView(StaffOrAboveMixin, ListView):
     model = Category
     template_name = 'lab_inventory/category_list.html'
     context_object_name = 'categories'
@@ -71,7 +90,7 @@ class CategoryListView(ListView):
         return [self.template_name]
 
 
-class CategoryCreateView(CreateView):
+class CategoryCreateView(AdminOrAboveMixin, CreateView):
     model = Category
     form_class = CategoryForm
     template_name = 'lab_inventory/partials/_form_modal.html'
@@ -82,7 +101,7 @@ class CategoryCreateView(CreateView):
         return super().form_valid(form)
 
 
-class CategoryUpdateView(UpdateView):
+class CategoryUpdateView(AdminOrAboveMixin, UpdateView):
     model = Category
     form_class = CategoryForm
     template_name = 'lab_inventory/partials/_form_modal.html'
@@ -92,7 +111,7 @@ class CategoryUpdateView(UpdateView):
         return Category.objects.for_tenant(self.request.tenant)
 
 
-class CategoryDeleteView(DeleteView):
+class CategoryDeleteView(AdminOrAboveMixin, DeleteView):
     model = Category
     template_name = 'lab_inventory/partials/_confirm_delete.html'
     success_url = reverse_lazy('lab_inventory:category_list')
@@ -103,7 +122,7 @@ class CategoryDeleteView(DeleteView):
 
 # ────────────── Unidades de medida ──────────────
 
-class UOMListView(ListView):
+class UOMListView(StaffOrAboveMixin, ListView):
     model = UnitOfMeasure
     template_name = 'lab_inventory/uom_list.html'
     context_object_name = 'uoms'
@@ -117,7 +136,7 @@ class UOMListView(ListView):
         return [self.template_name]
 
 
-class UOMCreateView(CreateView):
+class UOMCreateView(AdminOrAboveMixin, CreateView):
     model = UnitOfMeasure
     form_class = UnitOfMeasureForm
     template_name = 'lab_inventory/partials/_form_modal.html'
@@ -128,7 +147,7 @@ class UOMCreateView(CreateView):
         return super().form_valid(form)
 
 
-class UOMUpdateView(UpdateView):
+class UOMUpdateView(AdminOrAboveMixin, UpdateView):
     model = UnitOfMeasure
     form_class = UnitOfMeasureForm
     template_name = 'lab_inventory/partials/_form_modal.html'
@@ -138,7 +157,7 @@ class UOMUpdateView(UpdateView):
         return UnitOfMeasure.objects.for_tenant(self.request.tenant)
 
 
-class UOMDeleteView(DeleteView):
+class UOMDeleteView(AdminOrAboveMixin, DeleteView):
     model = UnitOfMeasure
     template_name = 'lab_inventory/partials/_confirm_delete.html'
     success_url = reverse_lazy('lab_inventory:uom_list')
@@ -149,7 +168,7 @@ class UOMDeleteView(DeleteView):
 
 # ────────────── Proveedores ──────────────
 
-class SupplierListView(ListView):
+class SupplierListView(StaffOrAboveMixin, ListView):
     model = Supplier
     template_name = 'lab_inventory/supplier_list.html'
     context_object_name = 'suppliers'
@@ -168,7 +187,7 @@ class SupplierListView(ListView):
         return [self.template_name]
 
 
-class SupplierCreateView(CreateView):
+class SupplierCreateView(AdminOrAboveMixin, CreateView):
     model = Supplier
     form_class = SupplierForm
     template_name = 'lab_inventory/supplier_form.html'
@@ -179,7 +198,7 @@ class SupplierCreateView(CreateView):
         return super().form_valid(form)
 
 
-class SupplierUpdateView(UpdateView):
+class SupplierUpdateView(AdminOrAboveMixin, UpdateView):
     model = Supplier
     form_class = SupplierForm
     template_name = 'lab_inventory/supplier_form.html'
@@ -189,7 +208,7 @@ class SupplierUpdateView(UpdateView):
         return Supplier.objects.for_tenant(self.request.tenant)
 
 
-class SupplierDeleteView(DeleteView):
+class SupplierDeleteView(AdminOrAboveMixin, DeleteView):
     model = Supplier
     template_name = 'lab_inventory/partials/_confirm_delete.html'
     success_url = reverse_lazy('lab_inventory:supplier_list')
@@ -200,7 +219,7 @@ class SupplierDeleteView(DeleteView):
 
 # ────────────── Insumos ──────────────
 
-class SupplyListView(ListView):
+class SupplyListView(StaffOrAboveMixin, ListView):
     model = Supply
     template_name = 'lab_inventory/supply_list.html'
     context_object_name = 'supplies'
@@ -229,7 +248,7 @@ class SupplyListView(ListView):
         return [self.template_name]
 
 
-class SupplyCreateView(CreateView):
+class SupplyCreateView(AdminOrAboveMixin, CreateView):
     model = Supply
     form_class = SupplyForm
     template_name = 'lab_inventory/supply_form.html'
@@ -246,7 +265,7 @@ class SupplyCreateView(CreateView):
         return form
 
 
-class SupplyUpdateView(UpdateView):
+class SupplyUpdateView(AdminOrAboveMixin, UpdateView):
     model = Supply
     form_class = SupplyForm
     template_name = 'lab_inventory/supply_form.html'
@@ -262,7 +281,7 @@ class SupplyUpdateView(UpdateView):
         return form
 
 
-class SupplyDetailView(DetailView):
+class SupplyDetailView(StaffOrAboveMixin, DetailView):
     model = Supply
     template_name = 'lab_inventory/supply_detail.html'
     context_object_name = 'supply'
@@ -285,7 +304,7 @@ class SupplyDetailView(DetailView):
         return ctx
 
 
-class SupplyDeleteView(DeleteView):
+class SupplyDeleteView(AdminOrAboveMixin, DeleteView):
     model = Supply
     template_name = 'lab_inventory/partials/_confirm_delete.html'
     success_url = reverse_lazy('lab_inventory:supply_list')
@@ -296,7 +315,7 @@ class SupplyDeleteView(DeleteView):
 
 # ────────────── Reactivos ──────────────
 
-class ReagentListView(ListView):
+class ReagentListView(StaffOrAboveMixin, ListView):
     model = Reagent
     template_name = 'lab_inventory/reagent_list.html'
     context_object_name = 'reagents'
@@ -315,7 +334,7 @@ class ReagentListView(ListView):
         return [self.template_name]
 
 
-class ReagentCreateView(CreateView):
+class ReagentCreateView(AdminOrAboveMixin, CreateView):
     model = Reagent
     form_class = ReagentForm
     template_name = 'lab_inventory/reagent_form.html'
@@ -331,7 +350,7 @@ class ReagentCreateView(CreateView):
         return form
 
 
-class ReagentUpdateView(UpdateView):
+class ReagentUpdateView(AdminOrAboveMixin, UpdateView):
     model = Reagent
     form_class = ReagentForm
     template_name = 'lab_inventory/reagent_form.html'
@@ -346,7 +365,7 @@ class ReagentUpdateView(UpdateView):
         return form
 
 
-class ReagentDetailView(DetailView):
+class ReagentDetailView(StaffOrAboveMixin, DetailView):
     model = Reagent
     template_name = 'lab_inventory/reagent_detail.html'
     context_object_name = 'reagent'
@@ -366,7 +385,7 @@ class ReagentDetailView(DetailView):
         return ctx
 
 
-class ReagentDeleteView(DeleteView):
+class ReagentDeleteView(AdminOrAboveMixin, DeleteView):
     model = Reagent
     template_name = 'lab_inventory/partials/_confirm_delete.html'
     success_url = reverse_lazy('lab_inventory:reagent_list')
@@ -378,6 +397,7 @@ class ReagentDeleteView(DeleteView):
 # ────────────── Ítems de receta ──────────────
 
 @login_required
+@role_required('admin', 'manager')
 def reagent_item_add(request, reagent_pk):
     reagent = get_object_or_404(
         Reagent.objects.for_tenant(request.tenant), pk=reagent_pk
@@ -397,6 +417,7 @@ def reagent_item_add(request, reagent_pk):
 
 
 @login_required
+@role_required('admin', 'manager')
 def reagent_item_delete(request, item_pk):
     item = get_object_or_404(ReagentItem, pk=item_pk)
     reagent_pk = item.reagent.pk
@@ -407,7 +428,7 @@ def reagent_item_delete(request, item_pk):
 
 # ────────────── Movimientos de stock ──────────────
 
-class StockMovementListView(ListView):
+class StockMovementListView(StaffOrAboveMixin, ListView):
     model = StockMovement
     template_name = 'lab_inventory/movement_list.html'
     context_object_name = 'movements'
@@ -434,7 +455,7 @@ class StockMovementListView(ListView):
         return [self.template_name]
 
 
-class StockMovementCreateView(CreateView):
+class StockMovementCreateView(AdminOrAboveMixin, CreateView):
     model = StockMovement
     form_class = StockMovementForm
     template_name = 'lab_inventory/movement_form.html'
@@ -454,7 +475,7 @@ class StockMovementCreateView(CreateView):
 
 # ────────────── Órdenes de producción ──────────────
 
-class ProductionOrderListView(ListView):
+class ProductionOrderListView(StaffOrAboveMixin, ListView):
     model = ProductionOrder
     template_name = 'lab_inventory/order_list.html'
     context_object_name = 'orders'
@@ -475,7 +496,7 @@ class ProductionOrderListView(ListView):
         return [self.template_name]
 
 
-class ProductionOrderCreateView(CreateView):
+class ProductionOrderCreateView(AdminOrAboveMixin, CreateView):
     model = ProductionOrder
     form_class = ProductionOrderForm
     template_name = 'lab_inventory/order_form.html'
@@ -492,7 +513,7 @@ class ProductionOrderCreateView(CreateView):
         return form
 
 
-class ProductionOrderDetailView(DetailView):
+class ProductionOrderDetailView(StaffOrAboveMixin, DetailView):
     model = ProductionOrder
     template_name = 'lab_inventory/order_detail.html'
     context_object_name = 'order'
@@ -526,6 +547,7 @@ class ProductionOrderDetailView(DetailView):
 
 
 @login_required
+@role_required('admin', 'manager')
 def production_order_start(request, pk):
     """Inicia la orden de producción: consume insumos del inventario."""
     order = get_object_or_404(
@@ -592,6 +614,7 @@ def production_order_start(request, pk):
 
 
 @login_required
+@role_required('admin', 'manager')
 def production_order_complete(request, pk):
     """Completa la orden de producción."""
     order = get_object_or_404(
@@ -605,6 +628,7 @@ def production_order_complete(request, pk):
 
 
 @login_required
+@role_required('admin', 'manager')
 def production_order_cancel(request, pk):
     """Cancela la orden y revierte los consumos."""
     order = get_object_or_404(

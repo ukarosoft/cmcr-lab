@@ -1,68 +1,66 @@
 {% extends 'base.html' %}
 
-{% block title %}Iniciar Sesión — Ukaro{% endblock %}
+{% block title %}Iniciar sesión — CMCR Lab{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4"
-     style="background-color: var(--surface-body-dark);">
-    <div class="w-full max-w-md">
-
-        <!-- Logo -->
+<div class="min-h-screen flex items-center justify-center" style="background: linear-gradient(135deg, var(--color-primary-900) 0%, #0D1B2A 100%);">
+    <div style="max-width: 420px; width: 100%; margin: 1rem;">
+        <!-- Logo y nombre -->
         <div class="text-center mb-8">
-            <h1 style="font-family: var(--font-display); font-weight: 800; font-size: 2rem; color: var(--color-primary-400);">
-                Ukaro
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center"
+                 style="background: rgba(255,255,255,0.1);">
+                <svg class="w-10 h-10" style="color: var(--color-primary-400);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                </svg>
+            </div>
+            <h1 style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-2xl); color: white; margin-bottom: 0.25rem;">
+                CMCR Lab
             </h1>
-            <p style="color: var(--gray-400);" class="mt-2 text-sm">
-                Ukarasoft Technology
+            <p style="color: rgba(255,255,255,0.5); font-size: var(--text-sm);">
+                Centro Clínico Madre Carmen Rendiles
             </p>
         </div>
 
-        <!-- Formulario -->
-        <div style="background-color: var(--surface-card-dark); border: 1px solid rgba(255,255,255,0.08);"
-             class="rounded-xl p-8 shadow-lg">
-
-            <h2 class="text-lg font-semibold mb-6" style="color: var(--gray-100);">
+        <!-- Card de login -->
+        <div style="background: var(--surface-card); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-xl);">
+            <h2 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 1.5rem;">
                 Iniciar sesión
             </h2>
 
             {% if error %}
-            <div class="badge-error rounded-lg px-4 py-3 text-sm mb-4">
+            <div class="alert alert-error mb-4" role="alert">
                 {{ error }}
             </div>
             {% endif %}
 
-            <form method="post" class="flex flex-col gap-4">
+            <form method="post" class="space-y-4">
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
 
                 <div>
-                    <label class="block text-sm font-medium mb-1.5" style="color: var(--gray-300);">
-                        Usuario
-                    </label>
-                    <input type="text"
-                           name="username"
-                           autocomplete="username"
-                           required
-                           class="form-input"
-                           style="background-color: var(--surface-body-dark); color: var(--gray-100); border-color: rgba(255,255,255,0.12);">
+                    <label for="username" class="label-base">Usuario</label>
+                    <input type="text" name="username" id="username"
+                           class="input-base" placeholder="admin"
+                           required autocomplete="username" autofocus>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-1.5" style="color: var(--gray-300);">
-                        Contraseña
-                    </label>
-                    <input type="password"
-                           name="password"
-                           autocomplete="current-password"
-                           required
-                           class="form-input"
-                           style="background-color: var(--surface-body-dark); color: var(--gray-100); border-color: rgba(255,255,255,0.12);">
+                    <label for="password" class="label-base">Contraseña</label>
+                    <input type="password" name="password" id="password"
+                           class="input-base" placeholder="••••••••"
+                           required autocomplete="current-password">
                 </div>
 
-                <button type="submit" class="btn-primary w-full justify-center mt-2">
-                    Ingresar
+                <button type="submit" class="btn-primary w-full justify-center" style="margin-top: 0.5rem;">
+                    Ingresar al sistema
                 </button>
             </form>
         </div>
+
+        <p class="text-center mt-6" style="color: rgba(255,255,255,0.35); font-size: var(--text-xs);">
+            Sistema de Gestión de Inventario y Producción de Reactivos
+        </p>
     </div>
 </div>
 {% endblock %}

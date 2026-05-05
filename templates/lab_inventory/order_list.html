@@ -7,20 +7,16 @@
     {% include 'components/_sidebar.html' %}
 
     <div class="flex-1 p-6 lg:p-8">
-        <div class="flex items-center justify-between mb-5">
-            <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Órdenes de producción</h1>
-            <a href="{% url 'lab_inventory:order_create' %}"
-               style="background: var(--color-primary-600); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); text-decoration: none;">
-                + Nueva orden
-            </a>
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-title">Órdenes de producción</h1>
+            <a href="{% url 'lab_inventory:order_create' %}" class="btn-primary">+ Nueva orden</a>
         </div>
 
-        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem; display: flex; gap: 12px; align-items: center;">
-            <select name="status"
+        <div class="card mb-4" style="display: flex; gap: 1rem; align-items: center;">
+            <select name="status" class="input-base" style="max-width: 200px;"
                     hx-get="{% url 'lab_inventory:order_list' %}"
                     hx-trigger="change"
-                    hx-target="#order-table"
-                    style="padding: 0.5rem 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--text-primary); background: var(--surface-body);">
+                    hx-target="#order-table">
                 <option value="">Todos los estados</option>
                 <option value="planned">Planificada</option>
                 <option value="in_progress">En proceso</option>
@@ -29,7 +25,7 @@
             </select>
         </div>
 
-        <div id="order-table" style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+        <div id="order-table" class="card" style="padding: 0; overflow: hidden;">
             {% include 'lab_inventory/partials/_order_table.html' %}
         </div>
     </div>

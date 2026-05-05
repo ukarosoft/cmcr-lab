@@ -1,27 +1,18 @@
 <table style="width: 100%; border-collapse: collapse;">
-    <thead>
-        <tr style="border-bottom: 2px solid var(--border-default); background: var(--surface-body);">
-            <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary); font-weight: 600;">Nombre</th>
-            <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary); font-weight: 600;">RIF</th>
-            <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary); font-weight: 600;">Contacto</th>
-            <th style="text-align: center; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary); font-weight: 600;">Acciones</th>
-        </tr>
-    </thead>
+    <thead><tr><th class="th-base">Nombre</th><th class="th-base">RIF</th><th class="th-base">Contacto</th><th class="th-base text-center">Acciones</th></tr></thead>
     <tbody>
         {% for s in suppliers %}
-        <tr style="border-bottom: 1px solid var(--border-default);">
-            <td style="padding: 0.75rem 1rem; font-size: var(--text-sm); color: var(--text-primary); font-weight: 500;">{{ s.name }}</td>
-            <td style="padding: 0.75rem 1rem; font-size: var(--text-sm); color: var(--text-secondary); font-family: var(--font-mono);">{{ s.rif|default:'—' }}</td>
-            <td style="padding: 0.75rem 1rem; font-size: var(--text-sm); color: var(--text-secondary);">{{ s.contact_name|default:'—' }}</td>
-            <td style="text-align: center; padding: 0.75rem 1rem;">
-                <a href="{% url 'lab_inventory:supplier_update' s.pk %}" style="color: var(--color-primary-600); font-size: var(--text-xs); margin-right: 8px; text-decoration: none;">Editar</a>
-                <a href="{% url 'lab_inventory:supplier_delete' s.pk %}" style="color: var(--color-error-600); font-size: var(--text-xs); text-decoration: none;">Eliminar</a>
+        <tr>
+            <td class="td-base" style="font-weight: 500;">{{ s.name }}</td>
+            <td class="td-base" style="font-family: var(--font-mono); color: var(--text-secondary);">{{ s.rif|default:'—' }}</td>
+            <td class="td-base" style="color: var(--text-secondary);">{{ s.contact_name|default:'—' }}</td>
+            <td class="td-base text-center">
+                <a href="{% url 'lab_inventory:supplier_update' s.pk %}" style="color: var(--color-primary-600); font-size: var(--text-xs); margin-right: 0.5rem; text-decoration: none;">Editar</a>
+                <a href="{% url 'lab_inventory:supplier_delete' s.pk %}" style="color: var(--color-danger); font-size: var(--text-xs); text-decoration: none;">Eliminar</a>
             </td>
         </tr>
         {% empty %}
-        <tr>
-            <td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: var(--text-sm);">No hay proveedores.</td>
-        </tr>
+        <tr><td colspan="4" class="td-base text-center" style="padding: 3rem;">No hay proveedores.</td></tr>
         {% endfor %}
     </tbody>
 </table>

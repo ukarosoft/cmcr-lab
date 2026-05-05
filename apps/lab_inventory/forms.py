@@ -5,19 +5,30 @@ from .models import (
 )
 
 
-class CategoryForm(forms.ModelForm):
+class BaseForm(forms.ModelForm):
+    """Agrega input-base a todos los widgets automáticamente."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            css = field.widget.attrs.get('class', '')
+            field.widget.attrs['class'] = f'input-base {css}'.strip()
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = css
+
+
+class CategoryForm(BaseForm):
     class Meta:
         model = Category
         fields = ['name', 'description']
 
 
-class UnitOfMeasureForm(forms.ModelForm):
+class UnitOfMeasureForm(BaseForm):
     class Meta:
         model = UnitOfMeasure
         fields = ['name', 'abbreviation']
 
 
-class SupplierForm(forms.ModelForm):
+class SupplierForm(BaseForm):
     class Meta:
         model = Supplier
         fields = [
@@ -26,7 +37,7 @@ class SupplierForm(forms.ModelForm):
         ]
 
 
-class SupplyForm(forms.ModelForm):
+class SupplyForm(BaseForm):
     class Meta:
         model = Supply
         fields = [
@@ -35,7 +46,7 @@ class SupplyForm(forms.ModelForm):
         ]
 
 
-class ReagentForm(forms.ModelForm):
+class ReagentForm(BaseForm):
     class Meta:
         model = Reagent
         fields = [
@@ -44,7 +55,7 @@ class ReagentForm(forms.ModelForm):
         ]
 
 
-class ReagentItemForm(forms.ModelForm):
+class ReagentItemForm(BaseForm):
     class Meta:
         model = ReagentItem
         fields = ['supply', 'quantity', 'unit', 'notes']
@@ -56,7 +67,7 @@ class ReagentItemForm(forms.ModelForm):
             self.fields['supply'].queryset = Supply.objects.for_tenant(self.tenant)
 
 
-class ProductionOrderForm(forms.ModelForm):
+class ProductionOrderForm(BaseForm):
     class Meta:
         model = ProductionOrder
         fields = ['reagent', 'batch_number', 'quantity', 'notes']
@@ -68,7 +79,7 @@ class ProductionOrderForm(forms.ModelForm):
             self.fields['reagent'].queryset = Reagent.objects.for_tenant(self.tenant)
 
 
-class StockMovementForm(forms.ModelForm):
+class StockMovementForm(BaseForm):
     class Meta:
         model = StockMovement
         fields = [

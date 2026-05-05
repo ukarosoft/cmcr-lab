@@ -65,3 +65,69 @@ def auth_client(client, admin_user):
     """Cliente HTTP autenticado como admin."""
     client.force_login(admin_user)
     return client
+
+
+# ── Lab Inventory fixtures ──────────────────────────────────────────
+
+@pytest.fixture
+def category(db, org_a):
+    """Categoría de insumos en org_a."""
+    from apps.lab_inventory.models import Category
+    return Category.objects.create(
+        organization=org_a,
+        name='Reactivos Base',
+        description='Reactivos base para preparación analítica',
+    )
+
+
+@pytest.fixture
+def uom_kg(db, org_a):
+    """Unidad de medida: Kilogramo."""
+    from apps.lab_inventory.models import UnitOfMeasure
+    return UnitOfMeasure.objects.create(
+        organization=org_a,
+        name='Kilogramo',
+        abbreviation='kg',
+    )
+
+
+@pytest.fixture
+def uom_ml(db, org_a):
+    """Unidad de medida: Mililitro."""
+    from apps.lab_inventory.models import UnitOfMeasure
+    return UnitOfMeasure.objects.create(
+        organization=org_a,
+        name='Mililitro',
+        abbreviation='ml',
+    )
+
+
+@pytest.fixture
+def supplier(db, org_a):
+    """Proveedor en org_a."""
+    from apps.lab_inventory.models import Supplier
+    return Supplier.objects.create(
+        organization=org_a,
+        name='Químicos del Sur',
+        rif='J-12345678-9',
+        contact_name='Juan Pérez',
+        phone='+58-412-555-1234',
+        email='juan@quimicossur.com',
+        address='Av. Principal, Guanare',
+    )
+
+
+@pytest.fixture
+def supply(db, org_a, category, uom_kg):
+    """Insumo en org_a con stock_min=10."""
+    from apps.lab_inventory.models import Supply
+    return Supply.objects.create(
+        organization=org_a,
+        code='INS-001',
+        name='Cloruro de Sodio',
+        description='NaCl grado analítico',
+        category=category,
+        unit=uom_kg,
+        stock_min=10,
+        stock_max=50,
+    )

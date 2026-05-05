@@ -7,31 +7,22 @@
     {% include 'components/_sidebar.html' %}
 
     <div class="flex-1 p-6 lg:p-8">
-        <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">
-                    Reactivos
-                </h1>
-                <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-top: 2px;">
-                    Catálogo de reactivos con recetas
-                </p>
+                <h1 class="text-title">Reactivos</h1>
+                <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-top: 0.25rem;">Catálogo de reactivos con recetas</p>
             </div>
-            <a href="{% url 'lab_inventory:reagent_create' %}"
-               style="background: var(--color-primary-600); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: 500; text-decoration: none;">
-                + Nuevo reactivo
-            </a>
+            <a href="{% url 'lab_inventory:reagent_create' %}" class="btn-primary">+ Nuevo reactivo</a>
         </div>
 
-        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem;">
-            <input type="search" name="q" placeholder="Buscar reactivo..."
+        <div class="card mb-4">
+            <input type="search" name="q" placeholder="Buscar reactivo..." class="input-base" style="max-width: 320px;"
                    hx-get="{% url 'lab_inventory:reagent_list' %}"
                    hx-trigger="keyup changed delay:300ms"
-                   hx-target="#reagent-table"
-                   style="width: 100%; max-width: 400px; padding: 0.5rem 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--text-primary); background: var(--surface-body);">
+                   hx-target="#reagent-table">
         </div>
 
-        <div id="reagent-table"
-             style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+        <div id="reagent-table" class="card" style="padding: 0; overflow: hidden;">
             {% include 'lab_inventory/partials/_reagent_table.html' %}
         </div>
     </div>

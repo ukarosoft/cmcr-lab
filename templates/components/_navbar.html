@@ -4,35 +4,48 @@
      x-init="dark ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')">
 
     <div class="flex items-center gap-3">
-        <div class="w-7 h-7 bg-white/10 rounded-lg flex items-center justify-center">
-            <img src="{% static 'img/logo.svg' %}" alt="Logo Ukaro" class="w-5 h-5">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+             style="background: rgba(255,255,255,0.12);">
+            <svg class="w-5 h-5" style="color: white;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+            </svg>
         </div>
-        <span style="font-family: var(--font-heading); font-weight: 800; font-size: 1.1rem; color: white;">
-            Ukaro
+        <span style="font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: white;">
+            CMCR Lab
+        </span>
+        <span style="color: rgba(255,255,255,0.35); font-size: 0.7rem; margin-left: 0.25rem; margin-top: 2px;">
+            Centro Clínico Madre Carmen Rendiles
         </span>
     </div>
 
     <div class="flex items-center gap-4">
-        <span class="text-sm text-white/80">
+        {% if request.tenant %}
+        <span class="text-sm" style="color: rgba(255,255,255,0.6);">
+            {{ request.tenant.name }}
+        </span>
+        {% endif %}
+
+        <span class="text-sm" style="color: rgba(255,255,255,0.8);">
             {{ request.user.get_full_name|default:request.user.username }}
         </span>
 
-        <!-- Dark mode toggle -->
         <button
             @click="
                 dark = !dark;
                 dark ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');
                 localStorage.setItem('theme', dark ? 'dark' : 'light');
             "
-            class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+            class="p-2 rounded-lg transition-colors"
+            style="background: rgba(255,255,255,0.1);"
+            onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.1)'"
             :aria-label="dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
             :title="dark ? 'Modo claro' : 'Modo oscuro'">
-            <!-- Sol (modo claro) -->
             <svg x-show="dark" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 100 10A5 5 0 0012 7z"/>
             </svg>
-            <!-- Luna (modo oscuro) -->
             <svg x-show="!dark" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
@@ -40,7 +53,10 @@
         </button>
 
         <a href="{% url 'core:logout' %}"
-           class="text-sm text-white/70 hover:text-white transition-colors">
+           class="text-sm transition-colors"
+           style="color: rgba(255,255,255,0.7);"
+           onmouseover="this.style.color='white'"
+           onmouseout="this.style.color='rgba(255,255,255,0.7)'">
             Salir
         </a>
     </div>

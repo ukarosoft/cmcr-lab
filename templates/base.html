@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Ukaro{% endblock %}</title>
+    <title>{% block title %}CMCR Lab{% endblock %}</title>
 
     <!-- Fuentes oficiales Ukarasoft -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +25,7 @@
 
     {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full" style="background-color: var(--surface-body-light); font-family: var(--font-body);">
+<body class="h-full" style="background-color: var(--surface-body); font-family: var(--font-body);">
 
     {% if user.is_authenticated %}
         {% include 'components/_navbar.html' %}

@@ -7,88 +7,84 @@
     {% include 'components/_sidebar.html' %}
 
     <div class="flex-1 p-6 lg:p-8">
-        <div class="mb-5 flex items-center justify-between">
-            <a href="{% url 'lab_inventory:supply_list' %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">
-                ← Volver a insumos
-            </a>
-            <a href="{% url 'lab_inventory:supply_update' supply.pk %}"
-               style="background: var(--color-primary-600); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); text-decoration: none;">
-                Editar
-            </a>
+        <div class="flex items-center justify-between mb-5">
+            <a href="{% url 'lab_inventory:supply_list' %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">← Volver a insumos</a>
+            <div class="flex gap-3">
+                <a href="{% url 'lab_inventory:movement_create' %}" class="btn-secondary">+ Movimiento</a>
+                <a href="{% url 'lab_inventory:supply_update' supply.pk %}" class="btn-primary">Editar</a>
+            </div>
         </div>
 
-        <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem;">
-            {{ supply.name }}
-        </h1>
+        <h1 class="text-title" style="margin-bottom: 0.25rem;">{{ supply.name }}</h1>
+        {% if supply.code %}<p style="font-family: var(--font-mono); color: var(--text-secondary); font-size: var(--text-sm);">{{ supply.code }}</p>{% endif %}
 
-        <!-- Detalles -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
-                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Código</p>
-                <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 600; font-family: var(--font-mono);">{{ supply.code|default:'—' }}</p>
-            </div>
-            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 my-6">
+            <div class="card">
                 <p style="color: var(--text-secondary); font-size: var(--text-xs);">Categoría</p>
                 <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 500;">{{ supply.category.name }}</p>
             </div>
-            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+            <div class="card">
                 <p style="color: var(--text-secondary); font-size: var(--text-xs);">Stock actual</p>
                 <p style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700;
-                    {% if stock_status == 'low' %}color: var(--color-error-600);
-                    {% elif stock_status == 'high' %}color: var(--color-info-600);
-                    {% else %}color: var(--color-success-600);{% endif %}">
-                    {{ current_stock }} {{ supply.unit.abbreviation }}
+                    {% if stock_status == 'low' %}color: var(--color-danger-600);
+                    {% elif stock_status == 'high' %}color: var(--color-info);
+                    {% else %}color: var(--color-success);{% endif %}">
+                    {{ current_stock }} <span style="font-size: var(--text-base); font-weight: 400;">{{ supply.unit.abbreviation }}</span>
                 </p>
-                <p style="font-size: var(--text-xs); color: var(--text-secondary); margin-top: 4px;">
-                    Mín: {{ supply.stock_min }} | Máx: {{ supply.stock_max }}
-                </p>
+            </div>
+            <div class="card">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Stock mínimo</p>
+                <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 500;">{{ supply.stock_min }} {{ supply.unit.abbreviation }}</p>
+            </div>
+            <div class="card">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Lote</p>
+                <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 500;">{% if supply.tracks_batch %}Controlado{% else %}No controlado{% endif %}</p>
             </div>
         </div>
 
         {% if supply.description %}
-        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem;">
-            <p style="color: var(--text-secondary); font-size: var(--text-xs); margin-bottom: 4px;">Descripción</p>
+        <div class="card mb-6">
+            <p style="color: var(--text-secondary); font-size: var(--text-xs); margin-bottom: 0.25rem;">Descripción</p>
             <p style="color: var(--text-primary); font-size: var(--text-sm);">{{ supply.description }}</p>
         </div>
         {% endif %}
 
-        <!-- Movimientos -->
-        <h2 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">
-            Historial de movimientos
-        </h2>
-
+        <h3 class="text-subtitle" style="margin-bottom: 0.75rem;">Historial de movimientos</h3>
         {% if movements %}
-        <div style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+        <div class="card" style="padding: 0; overflow: hidden;">
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr style="border-bottom: 2px solid var(--border-default); background: var(--surface-body);">
-                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Fecha</th>
-                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Tipo</th>
-                        <th style="text-align: right; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Cantidad</th>
-                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Lote</th>
-                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Motivo</th>
+                    <tr>
+                        <th class="th-base">Fecha</th>
+                        <th class="th-base">Tipo</th>
+                        <th class="th-base text-right">Cantidad</th>
+                        <th class="th-base">Lote</th>
+                        <th class="th-base">Motivo</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for m in movements %}
-                    <tr style="border-bottom: 1px solid var(--border-default);">
-                        <td style="padding: 0.5rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">{{ m.created_at|date:"d/m/Y H:i" }}</td>
-                        <td style="padding: 0.5rem 1rem;">{{ m.get_movement_type_display }}</td>
-                        <td style="text-align: right; padding: 0.5rem 1rem; font-size: var(--text-sm);
-                            {% if m.quantity < 0 %}color: var(--color-error-600);{% else %}color: var(--color-success-600);{% endif %}">
-                            {{ m.quantity }}
+                    <tr>
+                        <td class="td-base" style="font-size: var(--text-xs); color: var(--text-secondary); white-space: nowrap;">{{ m.created_at|date:"d/m/Y H:i" }}</td>
+                        <td class="td-base">
+                            {% if m.movement_type == 'entry' %}
+                                <span class="badge badge-success">Entrada</span>
+                            {% elif m.movement_type == 'exit' %}
+                                <span class="badge badge-error">Salida</span>
+                            {% else %}
+                                <span class="badge badge-warning">Ajuste</span>
+                            {% endif %}
                         </td>
-                        <td style="padding: 0.5rem 1rem; font-size: var(--text-xs); color: var(--text-secondary); font-family: var(--font-mono);">{{ m.batch_number|default:'—' }}</td>
-                        <td style="padding: 0.5rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">{{ m.reason|default:'—' }}</td>
+                        <td class="td-base text-right" style="{% if m.quantity < 0 %}color: var(--color-danger);{% else %}color: var(--color-success);{% endif %}">{{ m.quantity }}</td>
+                        <td class="td-base" style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-secondary);">{{ m.batch_number|default:'—' }}</td>
+                        <td class="td-base" style="font-size: var(--text-xs); color: var(--text-secondary);">{{ m.reason|default:'—' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         {% else %}
-        <p style="color: var(--text-muted); font-size: var(--text-sm); text-align: center; padding: 2rem;">
-            Sin movimientos registrados para este insumo.
-        </p>
+        <p style="color: var(--text-muted); font-size: var(--text-sm); text-align: center; padding: 2rem;">Sin movimientos registrados para este insumo.</p>
         {% endif %}
     </div>
 </div>
