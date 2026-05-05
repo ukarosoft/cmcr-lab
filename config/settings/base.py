@@ -21,6 +21,7 @@ DJANGO_APPS = [
 LOCAL_APPS = [
     'apps.core',
     'apps.notifications',
+    'apps.lab_inventory',
 ]
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
 

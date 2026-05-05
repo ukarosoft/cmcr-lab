@@ -46,8 +46,8 @@ def logout_view(request):
 
 @login_required
 def dashboard_view(request):
-    """Dashboard principal del sistema."""
-    return render(request, 'core/dashboard.html')
+    """Redirige al dashboard de inventario."""
+    return redirect('lab_inventory:dashboard')
 
 
 def cuenta_suspendida_view(request):

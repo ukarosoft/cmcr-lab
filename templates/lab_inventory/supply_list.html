@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Insumos — CMCR Lab{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include 'components/_sidebar.html' %}
+
+    <div class="flex-1 p-6 lg:p-8">
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">
+                    Insumos
+                </h1>
+                <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-top: 2px;">
+                    Gestión de insumos de laboratorio
+                </p>
+            </div>
+            <a href="{% url 'lab_inventory:supply_create' %}"
+               style="background: var(--color-primary-600); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: 500; text-decoration: none;">
+                + Nuevo insumo
+            </a>
+        </div>
+
+        <!-- Búsqueda HTMX -->
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem;">
+            <input type="search"
+                   name="q"
+                   placeholder="Buscar insumo..."
+                   hx-get="{% url 'lab_inventory:supply_list' %}"
+                   hx-trigger="keyup changed delay:300ms"
+                   hx-target="#supply-table"
+                   hx-indicator="#spinner"
+                   style="width: 100%; max-width: 400px; padding: 0.5rem 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--text-primary); background: var(--surface-body);">
+            <span id="spinner" class="htmx-indicator" style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 8px;">Buscando...</span>
+        </div>
+
+        <div id="supply-table"
+             style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+            {% include 'lab_inventory/partials/_supply_table.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Proveedores — CMCR Lab{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include 'components/_sidebar.html' %}
+
+    <div class="flex-1 p-6 lg:p-8">
+        <div class="flex items-center justify-between mb-5">
+            <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Proveedores</h1>
+            <a href="{% url 'lab_inventory:supplier_create' %}"
+               style="background: var(--color-primary-600); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); text-decoration: none;">
+                + Nuevo
+            </a>
+        </div>
+
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem;">
+            <input type="search" name="q" placeholder="Buscar proveedor..."
+                   hx-get="{% url 'lab_inventory:supplier_list' %}"
+                   hx-trigger="keyup changed delay:300ms"
+                   hx-target="#supplier-table"
+                   style="width: 100%; max-width: 400px; padding: 0.5rem 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--text-primary); background: var(--surface-body);">
+        </div>
+
+        <div id="supplier-table" style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+            {% include 'lab_inventory/partials/_supplier_table.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

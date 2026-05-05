@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — CMCR Lab{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include 'components/_sidebar.html' %}
+
+    <div class="flex-1 p-6 lg:p-8">
+        <div class="mb-6">
+            <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">
+                Dashboard de Inventario
+            </h1>
+            <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-top: 4px;">
+                Centro Clínico Madre Carmen Rendiles
+            </p>
+        </div>
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs); font-weight: 500;">Insumos</p>
+                <p style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; color: var(--text-primary);">{{ total_supplies }}</p>
+            </div>
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs); font-weight: 500;">Reactivos</p>
+                <p style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; color: var(--text-primary);">{{ total_reagents }}</p>
+            </div>
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs); font-weight: 500;">Stock bajo</p>
+                <p style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; color: {% if low_stock_count %}var(--color-error-600){% else %}var(--color-success-600){% endif %};">
+                    {{ low_stock_count }}
+                </p>
+            </div>
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs); font-weight: 500;">Órdenes pendientes</p>
+                <p style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; color: var(--color-warning-600);">{{ pending_orders }}</p>
+            </div>
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs); font-weight: 500;">Completadas</p>
+                <p style="font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; color: var(--color-success-600);">{{ completed_orders }}</p>
+            </div>
+        </div>
+
+        <!-- Stock bajo alertas -->
+        {% if low_stock_items %}
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; border-left: 4px solid var(--color-error-600);">
+            <h3 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--color-error-600); margin-bottom: 0.75rem;">
+                Insumos con stock bajo
+            </h3>
+            <div class="overflow-x-auto">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border-default);">
+                            <th style="text-align: left; padding: 0.5rem 0.75rem; font-size: var(--text-xs); color: var(--text-secondary);">Insumo</th>
+                            <th style="text-align: right; padding: 0.5rem 0.75rem; font-size: var(--text-xs); color: var(--text-secondary);">Stock actual</th>
+                            <th style="text-align: right; padding: 0.5rem 0.75rem; font-size: var(--text-xs); color: var(--text-secondary);">Mínimo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in low_stock_items %}
+                        <tr style="border-bottom: 1px solid var(--border-default);">
+                            <td style="padding: 0.5rem 0.75rem; font-size: var(--text-sm); color: var(--text-primary);">
+                                <a href="{% url 'lab_inventory:supply_detail' s.pk %}" style="color: var(--color-primary-600); text-decoration: none;">
+                                    {{ s.name }}
+                                </a>
+                            </td>
+                            <td style="text-align: right; padding: 0.5rem 0.75rem; font-size: var(--text-sm); color: var(--color-error-600); font-weight: 600;">
+                                {{ s.current_stock }} {{ s.unit.abbreviation }}
+                            </td>
+                            <td style="text-align: right; padding: 0.5rem 0.75rem; font-size: var(--text-sm); color: var(--text-secondary);">
+                                {{ s.stock_min }} {{ s.unit.abbreviation }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Órdenes recientes -->
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">
+                        Estado de producción
+                    </h3>
+                    <a href="{% url 'lab_inventory:order_list' %}" style="color: var(--color-primary-600); font-size: var(--text-xs); text-decoration: none;">
+                        Ver todas
+                    </a>
+                </div>
+                <div class="grid grid-cols-4 gap-3">
+                    <div style="text-align: center;">
+                        <p style="font-size: var(--text-2xl); font-weight: 700; color: var(--color-warning-600);">{{ pending_orders }}</p>
+                        <p style="font-size: var(--text-xs); color: var(--text-secondary);">Planificadas</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <p style="font-size: var(--text-2xl); font-weight: 700; color: var(--color-info-600);">{{ in_progress_orders }}</p>
+                        <p style="font-size: var(--text-xs); color: var(--text-secondary);">En proceso</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <p style="font-size: var(--text-2xl); font-weight: 700; color: var(--color-success-600);">{{ completed_orders }}</p>
+                        <p style="font-size: var(--text-xs); color: var(--text-secondary);">Completadas</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <p style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-secondary);">{{ cancelled_orders }}</p>
+                        <p style="font-size: var(--text-xs); color: var(--text-secondary);">Canceladas</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Últimos movimientos -->
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">
+                        Últimos movimientos
+                    </h3>
+                    <a href="{% url 'lab_inventory:movement_list' %}" style="color: var(--color-primary-600); font-size: var(--text-xs); text-decoration: none;">
+                        Ver todos
+                    </a>
+                </div>
+                {% if recent_movements %}
+                <div class="overflow-x-auto">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--border-default);">
+                                <th style="text-align: left; padding: 0.4rem 0.5rem; font-size: var(--text-xs); color: var(--text-secondary);">Insumo</th>
+                                <th style="text-align: right; padding: 0.4rem 0.5rem; font-size: var(--text-xs); color: var(--text-secondary);">Cantidad</th>
+                                <th style="text-align: left; padding: 0.4rem 0.5rem; font-size: var(--text-xs); color: var(--text-secondary);">Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in recent_movements %}
+                            <tr style="border-bottom: 1px solid var(--border-default);">
+                                <td style="padding: 0.4rem 0.5rem; font-size: var(--text-xs); color: var(--text-primary);">{{ m.supply.name }}</td>
+                                <td style="text-align: right; padding: 0.4rem 0.5rem; font-size: var(--text-xs);{% if m.quantity < 0 %} color: var(--color-error-600);{% else %} color: var(--color-success-600);{% endif %}">
+                                    {{ m.quantity }}
+                                </td>
+                                <td style="padding: 0.4rem 0.5rem; font-size: var(--text-xs); color: var(--text-secondary);">{{ m.get_movement_type_display }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: var(--text-sm); text-align: center; padding: 2rem 0;">
+                    Sin movimientos registrados
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

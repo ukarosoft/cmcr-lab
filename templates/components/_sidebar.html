@@ -1,10 +1,71 @@
 <aside class="sidebar w-64 min-h-screen flex flex-col py-6 px-4">
     <nav class="flex flex-col gap-1">
-        <a href="{% url 'core:dashboard' %}"
+        <a href="{% url 'lab_inventory:dashboard' %}"
            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                   hover:bg-white/10"
            style="color: var(--gray-100);">
             Dashboard
+        </a>
+
+        <div class="mt-4 mb-1 px-3">
+            <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gray-400);">
+                Inventario
+            </span>
+        </div>
+
+        <a href="{% url 'lab_inventory:supply_list' %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  hover:bg-white/10"
+           style="color: var(--gray-100);">
+            Insumos
+        </a>
+
+        <a href="{% url 'lab_inventory:reagent_list' %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  hover:bg-white/10"
+           style="color: var(--gray-100);">
+            Reactivos
+        </a>
+
+        <a href="{% url 'lab_inventory:order_list' %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  hover:bg-white/10"
+           style="color: var(--gray-100);">
+            Producción
+        </a>
+
+        <a href="{% url 'lab_inventory:movement_list' %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  hover:bg-white/10"
+           style="color: var(--gray-100);">
+            Movimientos
+        </a>
+
+        <div class="mt-4 mb-1 px-3">
+            <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--gray-400);">
+                Catálogos
+            </span>
+        </div>
+
+        <a href="{% url 'lab_inventory:supplier_list' %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  hover:bg-white/10"
+           style="color: var(--gray-100);">
+            Proveedores
+        </a>
+
+        <a href="{% url 'lab_inventory:category_list' %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  hover:bg-white/10"
+           style="color: var(--gray-100);">
+            Categorías
+        </a>
+
+        <a href="{% url 'lab_inventory:uom_list' %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  hover:bg-white/10"
+           style="color: var(--gray-100);">
+            Unidades
         </a>
     </nav>
 </aside>

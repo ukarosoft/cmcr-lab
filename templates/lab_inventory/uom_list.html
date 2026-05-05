@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Unidades de medida — CMCR Lab{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include 'components/_sidebar.html' %}
+
+    <div class="flex-1 p-6 lg:p-8">
+        <div class="flex items-center justify-between mb-5">
+            <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Unidades de medida</h1>
+            <a href="{% url 'lab_inventory:uom_create' %}"
+               style="background: var(--color-primary-600); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); text-decoration: none;">
+                + Nueva
+            </a>
+        </div>
+
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-default); background: var(--surface-body);">
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Nombre</th>
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Abreviatura</th>
+                        <th style="text-align: center; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in uoms %}
+                    <tr style="border-bottom: 1px solid var(--border-default);">
+                        <td style="padding: 0.75rem 1rem; font-size: var(--text-sm); color: var(--text-primary); font-weight: 500;">{{ u.name }}</td>
+                        <td style="padding: 0.75rem 1rem; font-size: var(--text-sm); font-family: var(--font-mono); color: var(--text-secondary);">{{ u.abbreviation }}</td>
+                        <td style="text-align: center; padding: 0.75rem 1rem;">
+                            <a href="{% url 'lab_inventory:uom_update' u.pk %}" style="color: var(--color-primary-600); font-size: var(--text-xs); margin-right: 8px; text-decoration: none;">Editar</a>
+                            <a href="{% url 'lab_inventory:uom_delete' u.pk %}" style="color: var(--color-error-600); font-size: var(--text-xs); text-decoration: none;">Eliminar</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: var(--text-sm);">No hay unidades de medida.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

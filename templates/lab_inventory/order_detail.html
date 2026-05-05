@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}OP {{ order.batch_number }} — CMCR Lab{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include 'components/_sidebar.html' %}
+
+    <div class="flex-1 p-6 lg:p-8">
+        <div class="mb-5">
+            <a href="{% url 'lab_inventory:order_list' %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">
+                ← Volver a órdenes
+            </a>
+        </div>
+
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">
+                    OP — {{ order.batch_number }}
+                </h1>
+                <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-top: 2px;">
+                    {{ order.reagent.name }}
+                </p>
+            </div>
+            <div>
+                {% if order.status == 'planned' %}
+                    <form method="post" action="{% url 'lab_inventory:order_start' order.pk %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="background: var(--color-warning-600); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); cursor: pointer;">Iniciar producción</button>
+                    </form>
+                    <form method="post" action="{% url 'lab_inventory:order_cancel' order.pk %}" style="display: inline; margin-left: 8px;">
+                        {% csrf_token %}
+                        <button type="submit" style="background: rgba(220, 38, 38, 0.1); color: var(--color-error-600); border: 1px solid var(--color-error-600); padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); cursor: pointer;">Cancelar</button>
+                    </form>
+                {% elif order.status == 'in_progress' %}
+                    <form method="post" action="{% url 'lab_inventory:order_complete' order.pk %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="background: var(--color-success-600); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); cursor: pointer;">Completar</button>
+                    </form>
+                    <form method="post" action="{% url 'lab_inventory:order_cancel' order.pk %}" style="display: inline; margin-left: 8px;">
+                        {% csrf_token %}
+                        <button type="submit" style="background: rgba(220, 38, 38, 0.1); color: var(--color-error-600); border: 1px solid var(--color-error-600); padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); cursor: pointer;">Cancelar</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if errors %}
+        <div style="background: rgba(220, 38, 38, 0.08); border: 1px solid var(--color-error-600); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
+            <p style="color: var(--color-error-600); font-size: var(--text-sm); font-weight: 600;">Errores:</p>
+            <ul style="margin-top: 4px; padding-left: 1rem;">
+                {% for e in errors %}
+                <li style="color: var(--color-error-600); font-size: var(--text-xs);">{{ e }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Info de la orden -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Estado</p>
+                <p style="font-size: var(--text-lg); font-weight: 600;">{{ order.get_status_display }}</p>
+            </div>
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Reactivo</p>
+                <p style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">{{ order.reagent.name }}</p>
+            </div>
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Cantidad a producir</p>
+                <p style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">{{ order.quantity }}</p>
+            </div>
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Creado</p>
+                <p style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">{{ order.created_at|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+
+        {% if order.notes %}
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem;">
+            <p style="color: var(--text-secondary); font-size: var(--text-xs); margin-bottom: 4px;">Observaciones</p>
+            <p style="color: var(--text-primary); font-size: var(--text-sm);">{{ order.notes }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Insumos necesarios -->
+        <h2 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">
+            Insumos requeridos
+        </h2>
+
+        {% if needed_items %}
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 1.5rem;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-default); background: var(--surface-body);">
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Insumo</th>
+                        <th style="text-align: right; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Necesario</th>
+                        <th style="text-align: right; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Disponible</th>
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in needed_items %}
+                    <tr style="border-bottom: 1px solid var(--border-default);">
+                        <td style="padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">{{ item.supply.name }}</td>
+                        <td style="text-align: right; padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">{{ item.required_qty|floatformat:4 }} {{ item.unit.abbreviation }}</td>
+                        <td style="text-align: right; padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">{{ item.current_stock|floatformat:4 }} {{ item.supply.unit.abbreviation }}</td>
+                        <td style="padding: 0.5rem 1rem;">
+                            {% if item.current_stock >= item.required_qty %}
+                                <span style="color: var(--color-success-600); font-size: var(--text-xs);">Suficiente</span>
+                            {% else %}
+                                <span style="color: var(--color-error-600); font-size: var(--text-xs);">Insuficiente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted); font-size: var(--text-sm);">Este reactivo no tiene insumos en su receta.</p>
+        {% endif %}
+
+        <!-- Movimientos de consumo -->
+        {% if movements %}
+        <h2 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">
+            Consumos registrados
+        </h2>
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-default); background: var(--surface-body);">
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Insumo</th>
+                        <th style="text-align: right; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Cantidad</th>
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in movements %}
+                    <tr style="border-bottom: 1px solid var(--border-default);">
+                        <td style="padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">{{ m.supply.name }}</td>
+                        <td style="text-align: right; padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--color-error-600);">{{ m.quantity }}</td>
+                        <td style="padding: 0.5rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">{{ m.created_at|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

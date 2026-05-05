@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ reagent.name }} — CMCR Lab{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include 'components/_sidebar.html' %}
+
+    <div class="flex-1 p-6 lg:p-8">
+        <div class="mb-5 flex items-center justify-between">
+            <a href="{% url 'lab_inventory:reagent_list' %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">
+                ← Volver a reactivos
+            </a>
+            <div class="flex gap-3">
+                <a href="{% url 'lab_inventory:reagent_item_add' reagent.pk %}"
+                   style="background: var(--color-secondary-500); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); text-decoration: none;">
+                    + Agregar insumo
+                </a>
+                <a href="{% url 'lab_inventory:reagent_update' reagent.pk %}"
+                   style="background: var(--color-primary-600); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); text-decoration: none;">
+                    Editar
+                </a>
+            </div>
+        </div>
+
+        <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem;">
+            {{ reagent.name }}
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Código</p>
+                <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 600; font-family: var(--font-mono);">{{ reagent.code|default:'—' }}</p>
+            </div>
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Rendimiento</p>
+                <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 600;">{{ reagent.yield_quantity }} {{ reagent.yield_unit.abbreviation }}</p>
+            </div>
+            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Lote</p>
+                <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 500;">{% if reagent.tracks_batch %}Controlado{% else %}No controlado{% endif %}</p>
+            </div>
+        </div>
+
+        {% if reagent.preparation_instructions %}
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem;">
+            <p style="color: var(--text-secondary); font-size: var(--text-xs); margin-bottom: 4px;">Instrucciones de preparación</p>
+            <p style="color: var(--text-primary); font-size: var(--text-sm); white-space: pre-wrap;">{{ reagent.preparation_instructions }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Receta / Insumos -->
+        <h2 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">
+            Receta — Insumos requeridos
+        </h2>
+
+        {% if reagent.items.all %}
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 1.5rem;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-default); background: var(--surface-body);">
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Insumo</th>
+                        <th style="text-align: right; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Cantidad</th>
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Notas</th>
+                        <th style="text-align: center; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in reagent.items.all %}
+                    <tr style="border-bottom: 1px solid var(--border-default);">
+                        <td style="padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">
+                            <a href="{% url 'lab_inventory:supply_detail' item.supply.pk %}" style="color: var(--color-primary-600); text-decoration: none;">
+                                {{ item.supply.name }}
+                            </a>
+                            <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 4px;">({{ item.supply.current_stock }} {{ item.supply.unit.abbreviation }})</span>
+                        </td>
+                        <td style="text-align: right; padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary); font-weight: 500;">
+                            {{ item.quantity }} {{ item.unit.abbreviation }}
+                        </td>
+                        <td style="padding: 0.5rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">{{ item.notes|default:'—' }}</td>
+                        <td style="text-align: center; padding: 0.5rem 1rem;">
+                            <form method="post" action="{% url 'lab_inventory:reagent_item_delete' item.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" style="background: none; border: none; color: var(--color-error-600); font-size: var(--text-xs); cursor: pointer;">Quitar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm); text-align: center; margin-bottom: 1.5rem;">
+            <p style="color: var(--text-muted); font-size: var(--text-sm);">Sin insumos en la receta.</p>
+            <a href="{% url 'lab_inventory:reagent_item_add' reagent.pk %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">
+                Agregar primer insumo
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Órdenes de producción -->
+        <h2 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">
+            Órdenes de producción
+        </h2>
+
+        {% if orders %}
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-default); background: var(--surface-body);">
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Lote</th>
+                        <th style="text-align: right; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Cantidad</th>
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Estado</th>
+                        <th style="text-align: left; padding: 0.75rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in orders %}
+                    <tr style="border-bottom: 1px solid var(--border-default);">
+                        <td style="padding: 0.5rem 1rem;">
+                            <a href="{% url 'lab_inventory:order_detail' o.pk %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">
+                                {{ o.batch_number }}
+                            </a>
+                        </td>
+                        <td style="text-align: right; padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">{{ o.quantity }}</td>
+                        <td style="padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">{{ o.get_status_display }}</td>
+                        <td style="padding: 0.5rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">{{ o.created_at|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted); font-size: var(--text-sm);">Sin órdenes de producción para este reactivo.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

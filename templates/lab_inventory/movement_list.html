@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Movimientos — CMCR Lab{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include 'components/_sidebar.html' %}
+
+    <div class="flex-1 p-6 lg:p-8">
+        <div class="flex items-center justify-between mb-5">
+            <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Movimientos de stock</h1>
+            <a href="{% url 'lab_inventory:movement_create' %}"
+               style="background: var(--color-primary-600); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); text-decoration: none;">
+                + Nuevo movimiento
+            </a>
+        </div>
+
+        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem;"
+             class="flex gap-3 items-center">
+            <input type="search" name="q" placeholder="Buscar..."
+                   hx-get="{% url 'lab_inventory:movement_list' %}"
+                   hx-trigger="keyup changed delay:300ms"
+                   hx-target="#movement-table"
+                   style="padding: 0.5rem 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--text-primary); background: var(--surface-body); flex: 1; max-width: 300px;">
+            <select name="type"
+                    hx-get="{% url 'lab_inventory:movement_list' %}"
+                    hx-trigger="change"
+                    hx-target="#movement-table"
+                    style="padding: 0.5rem 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--text-primary); background: var(--surface-body);">
+                <option value="">Todos los tipos</option>
+                <option value="entry">Entrada</option>
+                <option value="exit">Salida</option>
+                <option value="adjustment">Ajuste</option>
+            </select>
+        </div>
+
+        <div id="movement-table" style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+            {% include 'lab_inventory/partials/_movement_table.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

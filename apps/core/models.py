@@ -91,6 +91,11 @@ class User(AbstractUser):
     def is_staff_member(self):
         return self.role == 'staff'
 
+    def save(self, *args, **kwargs):
+        if self.is_superuser and self.role != 'superadmin':
+            self.role = 'superadmin'
+        super().save(*args, **kwargs)
+
 
 class TenantQuerySet(models.QuerySet):
     """QuerySet con filtrado multi-tenant incorporado."""

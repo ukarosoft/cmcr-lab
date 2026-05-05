@@ -1,0 +1,21 @@
+<div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm); max-width: 480px; margin: 0 auto; text-align: center;">
+    <h3 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">
+        Confirmar eliminación
+    </h3>
+    <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: 1.5rem;">
+        ¿Estás seguro de eliminar "{{ object }}"?
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="flex justify-center gap-3">
+            <button type="submit"
+                    style="background: var(--color-error-600); color: #fff; border: none; padding: 0.5rem 1.25rem; border-radius: var(--radius-md); font-size: var(--text-sm); cursor: pointer;">
+                Eliminar
+            </button>
+            <button type="button" onclick="history.back()"
+                    style="border: 1px solid var(--border-default); color: var(--text-secondary); padding: 0.5rem 1.25rem; border-radius: var(--radius-md); font-size: var(--text-sm); background: none; cursor: pointer;">
+                Cancelar
+            </button>
+        </div>
+    </form>
+</div>
