@@ -171,7 +171,7 @@ class Command(BaseCommand):
             ]
             for supply, qty, unit, notes in items2:
                 ReagentItem.objects.create(
-                    reagent=reagent2, supply=supply,
+                    organization=org, reagent=reagent2, supply=supply,
                     quantity=qty, unit=unit, notes=notes,
                 )
             self.stdout.write(f'     ↳ {reagent2.items.count()} ítems en la receta')
