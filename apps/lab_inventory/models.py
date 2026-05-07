@@ -183,7 +183,7 @@ class Reagent(TenantSoftDeleteModel):
         return self.name
 
 
-class ReagentItem(models.Model):
+class ReagentItem(TenantModel):
     """Ítem de la receta — insumo necesario para preparar un reactivo."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     reagent = models.ForeignKey(
@@ -213,6 +213,12 @@ class ReagentItem(models.Model):
         ordering = ['supply__name']
         verbose_name = 'Ítem de receta'
         verbose_name_plural = 'Ítems de receta'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['reagent', 'supply'],
+                name='unique_reagent_supply_item'
+            ),
+        ]
 
     def __str__(self):
         return f'{self.supply.name} → {self.reagent.name}'

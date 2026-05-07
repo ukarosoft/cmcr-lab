@@ -21,6 +21,10 @@ class Notification(TenantModel):
         verbose_name = 'Notificación'
         verbose_name_plural = 'Notificaciones'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'leida']),
+            models.Index(fields=['organization', '-created_at']),
+        ]
 
     def __str__(self):
         return f'{self.tipo}: {self.mensaje[:50]}'

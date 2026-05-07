@@ -42,13 +42,27 @@ class AdminOrAboveMixin:
 @role_required('admin', 'manager', 'staff')
 def dashboard(request):
     tenant = request.tenant
-    supplies = Supply.objects.for_tenant(tenant)
     reagents = Reagent.objects.for_tenant(tenant)
     orders = ProductionOrder.objects.for_tenant(tenant)
 
-    total_supplies = supplies.count()
+    # Optimizado: calcular stock con annotate en lugar de N+1
+    supplies_with_stock = (
+        Supply.objects.for_tenant(tenant)
+        .select_related('category', 'unit')
+        .annotate(computed_stock=Sum('movements__quantity'))
+    )
+
+    total_supplies = supplies_with_stock.count()
     total_reagents = reagents.count()
-    low_stock_count = sum(1 for s in supplies if s.stock_status == 'low')
+
+    # Calcular low stock sin N+1
+    low_stock_items = []
+    for s in supplies_with_stock:
+        stock = s.computed_stock or Decimal('0')
+        if stock <= s.stock_min:
+            s._current_stock = stock
+            low_stock_items.append(s)
+
     pending_orders = orders.filter(status='planned').count()
     in_progress_orders = orders.filter(status='in_progress').count()
     completed_orders = orders.filter(status='completed').count()
@@ -57,13 +71,10 @@ def dashboard(request):
         StockMovement.objects.for_tenant(tenant).select_related('supply', 'created_by')[:10]
     )
 
-    # Supplies with stock below minimum (alert)
-    low_stock_items = [s for s in supplies if s.stock_status == 'low']
-
     ctx = {
         'total_supplies': total_supplies,
         'total_reagents': total_reagents,
-        'low_stock_count': low_stock_count,
+        'low_stock_count': len(low_stock_items),
         'low_stock_items': low_stock_items,
         'pending_orders': pending_orders,
         'in_progress_orders': in_progress_orders,
@@ -406,6 +417,7 @@ def reagent_item_add(request, reagent_pk):
         form = ReagentItemForm(request.POST, tenant=request.tenant)
         if form.is_valid():
             form.instance.reagent = reagent
+            form.instance.organization = request.tenant
             form.save()
             return redirect('lab_inventory:reagent_detail', pk=reagent.pk)
     else:
@@ -419,7 +431,9 @@ def reagent_item_add(request, reagent_pk):
 @login_required
 @role_required('admin', 'manager')
 def reagent_item_delete(request, item_pk):
-    item = get_object_or_404(ReagentItem, pk=item_pk)
+    item = get_object_or_404(
+        ReagentItem.objects.for_tenant(request.tenant), pk=item_pk
+    )
     reagent_pk = item.reagent.pk
     if request.method == 'POST':
         item.delete()
@@ -630,16 +644,27 @@ def production_order_complete(request, pk):
 @login_required
 @role_required('admin', 'manager')
 def production_order_cancel(request, pk):
-    """Cancela la orden y revierte los consumos."""
+    """Cancela la orden y revierte los consumos con movimientos de entrada."""
     order = get_object_or_404(
         ProductionOrder.objects.for_tenant(request.tenant), pk=pk
     )
     if order.status in ('planned', 'in_progress'):
-        # Revertir consumos si ya se inició
+        # Revertir consumos creando entradas compensatorias (auditoría limpia)
         if order.status == 'in_progress':
-            StockMovement.objects.for_tenant(request.tenant).filter(
+            exit_movements = StockMovement.objects.for_tenant(request.tenant).filter(
                 production_order=order, movement_type='exit',
-            ).delete()
+            )
+            for mov in exit_movements:
+                StockMovement.objects.create(
+                    organization=request.tenant,
+                    supply=mov.supply,
+                    movement_type='entry',
+                    quantity=abs(mov.quantity),
+                    batch_number=mov.batch_number,
+                    production_order=order,
+                    reason=f'Reversión por cancelación OP {order.batch_number}',
+                    created_by=request.user,
+                )
         order.status = 'cancelled'
         order.completed_at = timezone.now()
         order.save()

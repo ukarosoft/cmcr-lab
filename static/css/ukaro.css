@@ -70,6 +70,13 @@
     /* Overlay (modales, drawers) */
     --overlay-bg: rgba(0, 0, 0, 0.5);
 
+    /* Sidebar / Navbar interactivos */
+    --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+    --sidebar-active-bg: rgba(255, 255, 255, 0.15);
+    --sidebar-text-primary: rgba(255, 255, 255, 0.85);
+    --sidebar-text-secondary: rgba(255, 255, 255, 0.6);
+    --sidebar-text-muted: rgba(255, 255, 255, 0.35);
+
     /* Grises */
     --gray-50:  #F9FAFB;
     --gray-100: #F3F4F6;
@@ -340,10 +347,76 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-inverse);
 }
 
+.navbar-icon-box {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sidebar-hover-bg);
+}
+
+.navbar-brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+}
+
+.navbar-subtitle {
+    color: var(--sidebar-text-muted);
+    font-size: 0.7rem;
+    margin-left: 0.25rem;
+    margin-top: 2px;
+}
+
+.navbar-text-muted { color: var(--sidebar-text-secondary); }
+.navbar-text { color: var(--sidebar-text-primary); }
+
+.navbar-btn {
+    padding: 0.5rem;
+    border-radius: var(--radius-lg);
+    transition: background-color var(--transition-base);
+    background: var(--sidebar-hover-bg);
+    border: none;
+    cursor: pointer;
+}
+.navbar-btn:hover { background: var(--sidebar-active-bg); }
+
+.navbar-logout {
+    font-size: var(--text-sm);
+    transition: color var(--transition-base);
+    color: var(--sidebar-text-secondary);
+    text-decoration: none;
+}
+.navbar-logout:hover { color: white; }
+
 .sidebar {
     background-color: var(--surface-sidebar);
     color: var(--gray-100);
     transition: background-color var(--transition-slow);
+}
+
+/* Sidebar links — sin inline JS */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--sidebar-text-primary);
+    transition: background-color var(--transition-base);
+    text-decoration: none;
+}
+.sidebar-link:hover {
+    background-color: var(--sidebar-hover-bg);
+}
+.sidebar-link-active {
+    background-color: var(--sidebar-active-bg);
+    color: white;
 }
 
 /* ----------------------------------------------------------------

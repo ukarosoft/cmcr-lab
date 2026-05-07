@@ -10,10 +10,22 @@ from apps.lab_inventory.models import (
 class Command(BaseCommand):
     help = 'Carga datos demo completos: insumos, reactivos con recetas y movimientos de stock'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--org-slug',
+            type=str,
+            required=True,
+            help='Slug de la organización donde cargar los datos demo',
+        )
+
     def handle(self, *args, **options):
-        org = Organization.objects.first()
-        if not org:
-            self.stderr.write('No hay organizaciones. Crea una primero.')
+        try:
+            org = Organization.objects.get(slug=options['org_slug'])
+        except Organization.DoesNotExist:
+            self.stderr.write(
+                f'Organización con slug "{options["org_slug"]}" no existe. '
+                f'Slugs disponibles: {", ".join(Organization.objects.values_list("slug", flat=True))}'
+            )
             return
 
         # ── Obtener o crear categorías ──
@@ -132,7 +144,7 @@ class Command(BaseCommand):
             ]
             for supply, qty, unit, notes in items:
                 ReagentItem.objects.create(
-                    reagent=reagent, supply=supply,
+                    organization=org, reagent=reagent, supply=supply,
                     quantity=qty, unit=unit, notes=notes,
                 )
             self.stdout.write(f'     ↳ {reagent.items.count()} ítems en la receta')

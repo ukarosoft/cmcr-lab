@@ -11,7 +11,7 @@ from .models import Notification
 def marcar_leida(request, pk):
     """Marca una notificación como leída (endpoint HTMX)."""
     notificacion = get_object_or_404(
-        Notification,
+        Notification.objects.for_tenant(request.tenant),
         pk=pk,
         user=request.user,
     )
@@ -24,7 +24,7 @@ def marcar_leida(request, pk):
 @require_POST
 def marcar_todas_leidas(request):
     """Marca todas las notificaciones del usuario como leídas."""
-    Notification.objects.filter(
+    Notification.objects.for_tenant(request.tenant).filter(
         user=request.user,
         leida=False,
     ).update(leida=True)

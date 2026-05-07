@@ -59,7 +59,8 @@ class TestDashboardView:
 
     def test_dashboard_accesible_autenticado(self, auth_client):
         response = auth_client.get(reverse('core:dashboard'))
-        assert response.status_code == 200
+        assert response.status_code == 302
+        assert reverse('lab_inventory:dashboard') in response.url
 
 
 class TestLogoutView:

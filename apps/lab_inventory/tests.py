@@ -421,7 +421,7 @@ class TestReagent:
             organization=org_a, name='Buffer', yield_unit=uom_ml,
         )
         item = ReagentItem.objects.create(
-            reagent=reagent, supply=supply,
+            organization=org_a, reagent=reagent, supply=supply,
             quantity=Decimal('0.5'), unit=uom_kg,
         )
         assert reagent.items.count() == 1
@@ -450,9 +450,9 @@ class TestReagentItem:
             organization=org_a, name='Reactivo Z', yield_unit=uom_ml,
         )
 
-    def test_creation(self, reagent, supply, uom_kg):
+    def test_creation(self, org_a, reagent, supply, uom_kg):
         item = ReagentItem.objects.create(
-            reagent=reagent, supply=supply,
+            organization=org_a, reagent=reagent, supply=supply,
             quantity=Decimal('2.5'), unit=uom_kg,
             notes='Agregar lentamente',
         )
@@ -461,42 +461,43 @@ class TestReagentItem:
         assert item.supply == supply
         assert item.quantity == Decimal('2.5')
         assert item.notes == 'Agregar lentamente'
+        assert item.organization == org_a
 
-    def test_str(self, reagent, supply, uom_kg):
+    def test_str(self, org_a, reagent, supply, uom_kg):
         item = ReagentItem.objects.create(
-            reagent=reagent, supply=supply,
+            organization=org_a, reagent=reagent, supply=supply,
             quantity=Decimal('1'), unit=uom_kg,
         )
         assert supply.name in str(item)
         assert reagent.name in str(item)
 
-    def test_quantity_positive_minimum(self, reagent, supply, uom_kg):
+    def test_quantity_positive_minimum(self, org_a, reagent, supply, uom_kg):
         # 0.0001 es el mínimo válido
         item = ReagentItem(
-            reagent=reagent, supply=supply,
+            organization=org_a, reagent=reagent, supply=supply,
             quantity=Decimal('0.0001'), unit=uom_kg,
         )
         item.full_clean()  # no lanza excepción
 
-    def test_quantity_zero_fails_validation(self, reagent, supply, uom_kg):
+    def test_quantity_zero_fails_validation(self, org_a, reagent, supply, uom_kg):
         item = ReagentItem(
-            reagent=reagent, supply=supply,
+            organization=org_a, reagent=reagent, supply=supply,
             quantity=Decimal('0'), unit=uom_kg,
         )
         with pytest.raises(ValidationError):
             item.full_clean()
 
-    def test_quantity_negative_fails_validation(self, reagent, supply, uom_kg):
+    def test_quantity_negative_fails_validation(self, org_a, reagent, supply, uom_kg):
         item = ReagentItem(
-            reagent=reagent, supply=supply,
+            organization=org_a, reagent=reagent, supply=supply,
             quantity=Decimal('-1'), unit=uom_kg,
         )
         with pytest.raises(ValidationError):
             item.full_clean()
 
-    def test_cascade_on_reagent_delete(self, reagent, supply, uom_kg):
+    def test_cascade_on_reagent_delete(self, org_a, reagent, supply, uom_kg):
         ReagentItem.objects.create(
-            reagent=reagent, supply=supply,
+            organization=org_a, reagent=reagent, supply=supply,
             quantity=Decimal('1'), unit=uom_kg,
         )
         assert ReagentItem.objects.count() == 1
