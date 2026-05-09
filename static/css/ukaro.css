@@ -1245,6 +1245,10 @@ html.dark .skeleton {
 .menu-item:hover { background-color: var(--gray-100); }
 html.dark .menu-item:hover { background-color: rgba(91, 184, 232, .08); }
 
+/* Hover row para listas tipo dashboard alert */
+.alert-row:hover { background-color: rgba(239, 68, 68, .04); }
+html.dark .alert-row:hover { background-color: rgba(239, 68, 68, .08); }
+
 /* ----------------------------------------------------------------
    QUICK ACTIONS / FLOATING — botón de acción primaria flotante
    ---------------------------------------------------------------- */
