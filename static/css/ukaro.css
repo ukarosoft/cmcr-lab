@@ -997,12 +997,18 @@ html.dark .skeleton {
     background: var(--gradient-night);
     color: var(--gray-100);
     width: 16rem;
-    min-height: 100vh;
+    flex-shrink: 0;
+    /* Sticky bajo el navbar (~60px) — el sidebar no scrollea con el contenido */
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     padding: var(--space-5) var(--space-3);
-    position: relative;
-    overflow-y: auto;
+}
+@media (max-width: 768px) {
+    .sidebar-pro { display: none; }  /* TODO: drawer móvil con Alpine */
 }
 .sidebar-pro::before {
     /* línea de marca sutil al borde derecho */
@@ -1216,6 +1222,28 @@ html.dark .skeleton {
     transform: scale(1.05);
     border-color: var(--color-primary-400);
 }
+
+/* ----------------------------------------------------------------
+   MENÚ DROPDOWN (navbar avatar, etc)
+   ---------------------------------------------------------------- */
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: background-color var(--transition-base);
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+.menu-item:hover { background-color: var(--gray-100); }
+html.dark .menu-item:hover { background-color: rgba(91, 184, 232, .08); }
 
 /* ----------------------------------------------------------------
    QUICK ACTIONS / FLOATING — botón de acción primaria flotante
