@@ -564,6 +564,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 .btn-table-delete:hover { background-color: var(--color-danger-600); }
 
+/* Modificador btn-ghost para acciones de cancelación
+   (mantiene el contorno ghost pero con color danger) */
+.btn-ghost.btn-cancel {
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+}
+.btn-ghost.btn-cancel:hover {
+    background-color: rgba(239, 68, 68, 0.08);
+    border-color: var(--color-danger-600);
+    color: var(--color-danger-600);
+}
+
 /* ----------------------------------------------------------------
    BOTÓN WARNING — para acciones que NO son CTA primaria
    pero requieren atención (Iniciar producción, etc.)
