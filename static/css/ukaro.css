@@ -619,3 +619,722 @@ html.dark .badge-neutral {
     background-color: var(--surface-sidebar);
     color: var(--text-secondary);
 }
+
+/* ================================================================
+   ════════════════════════════════════════════════════════════════
+   SISTEMA PREMIUM v2.1 — utilidades de elevación visual
+   Para superar la apariencia "plantilla" y entregar producto.
+   ════════════════════════════════════════════════════════════════
+   ================================================================ */
+
+:root {
+    /* Tokens de espaciado en escala 4pt (faltaban explícitos) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+
+    /* Gradientes de marca */
+    --gradient-brand: linear-gradient(135deg, var(--color-primary-900) 0%, var(--color-primary-600) 60%, var(--color-primary-400) 100%);
+    --gradient-brand-soft: linear-gradient(135deg, var(--color-primary-100) 0%, #FFFFFF 100%);
+    --gradient-secondary: linear-gradient(135deg, var(--color-secondary-700) 0%, var(--color-secondary-500) 100%);
+    --gradient-warning: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+    --gradient-danger: linear-gradient(135deg, var(--color-danger-600) 0%, var(--color-danger) 100%);
+    --gradient-night: linear-gradient(135deg, #0B1E30 0%, #0F2B47 60%, #1A3B66 100%);
+
+    /* Sombras de elevación expresivas (más profundidad que las base) */
+    --elevation-1: 0 1px 2px rgba(15, 23, 42, .04), 0 1px 3px rgba(15, 23, 42, .06);
+    --elevation-2: 0 4px 8px -2px rgba(15, 23, 42, .06), 0 2px 4px -1px rgba(15, 23, 42, .05);
+    --elevation-3: 0 12px 24px -8px rgba(15, 23, 42, .12), 0 4px 8px -4px rgba(15, 23, 42, .06);
+    --elevation-4: 0 20px 48px -12px rgba(11, 61, 145, .18), 0 8px 16px -8px rgba(15, 23, 42, .08);
+    --elevation-brand: 0 16px 40px -12px rgba(30, 127, 200, .35), 0 6px 12px -4px rgba(11, 61, 145, .15);
+    --elevation-danger: 0 16px 40px -12px rgba(239, 68, 68, .25);
+    --elevation-success: 0 16px 40px -12px rgba(46, 158, 101, .25);
+
+    /* Anillos de foco con glow */
+    --ring-brand: 0 0 0 3px rgba(30, 127, 200, .25);
+    --ring-success: 0 0 0 3px rgba(46, 158, 101, .25);
+    --ring-danger: 0 0 0 3px rgba(239, 68, 68, .25);
+}
+
+html.dark {
+    --gradient-brand-soft: linear-gradient(135deg, rgba(91, 184, 232, .12) 0%, transparent 100%);
+    --elevation-1: 0 1px 2px rgba(0, 0, 0, .3);
+    --elevation-2: 0 4px 8px -2px rgba(0, 0, 0, .35);
+    --elevation-3: 0 12px 24px -8px rgba(0, 0, 0, .45);
+    --elevation-4: 0 20px 48px -12px rgba(0, 0, 0, .55);
+}
+
+/* ----------------------------------------------------------------
+   GRADIENTES UTILITARIOS — para fondos, hero, CTA
+   ---------------------------------------------------------------- */
+.bg-brand-gradient    { background: var(--gradient-brand); color: var(--text-inverse); }
+.bg-brand-soft        { background: var(--gradient-brand-soft); }
+.bg-secondary-gradient{ background: var(--gradient-secondary); color: var(--text-inverse); }
+.bg-night-gradient    { background: var(--gradient-night); color: var(--text-inverse); }
+.bg-mesh {
+    /* mesh sutil para hero/login */
+    background:
+        radial-gradient(at 20% 30%, rgba(91, 184, 232, .25) 0px, transparent 50%),
+        radial-gradient(at 80% 0%,  rgba(46, 158, 101, .18) 0px, transparent 50%),
+        radial-gradient(at 0% 80%,  rgba(30, 127, 200, .22) 0px, transparent 50%),
+        var(--color-primary-900);
+}
+
+/* ----------------------------------------------------------------
+   GLASS / FROSTED — para overlays, login card, modales premium
+   ---------------------------------------------------------------- */
+.glass {
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, .6);
+}
+html.dark .glass {
+    background: rgba(19, 34, 54, .85);
+    border-color: rgba(91, 184, 232, .12);
+}
+.glass-dark {
+    background: rgba(11, 30, 48, .55);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, .12);
+}
+
+/* ----------------------------------------------------------------
+   CARD PRO — variante elevada con hover lift sutil
+   ---------------------------------------------------------------- */
+.card-pro {
+    background-color: var(--surface-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-default);
+    padding: var(--space-5);
+    box-shadow: var(--elevation-1);
+    transition:
+        box-shadow var(--transition-base),
+        transform var(--transition-base),
+        border-color var(--transition-base);
+}
+.card-pro:hover {
+    box-shadow: var(--elevation-3);
+    transform: translateY(-2px);
+    border-color: rgba(30, 127, 200, .25);
+}
+.card-pro--flat:hover { transform: none; }  /* sin lift cuando está dentro de un grid contemplativo */
+
+/* ----------------------------------------------------------------
+   KPI CARD PREMIUM — para dashboard
+   icono coloreado + value + label + delta + sparkline opcional
+   ---------------------------------------------------------------- */
+.kpi {
+    background-color: var(--surface-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-default);
+    padding: var(--space-5);
+    box-shadow: var(--elevation-1);
+    transition: box-shadow var(--transition-base), transform var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+.kpi::after {
+    /* franja de color superior, neutra por defecto */
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--color-primary-600);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+.kpi:hover {
+    box-shadow: var(--elevation-3);
+    transform: translateY(-2px);
+}
+.kpi:hover::after { opacity: 1; }
+
+.kpi-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-lg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-3);
+    background: var(--color-primary-100);
+    color: var(--color-primary-700);
+}
+.kpi-icon--success { background: rgba(46, 158, 101, .12); color: var(--color-secondary-700); }
+.kpi-icon--warning { background: rgba(245, 158, 11, .14); color: var(--color-warning-600); }
+.kpi-icon--danger  { background: rgba(239, 68, 68, .12); color: var(--color-danger-600); }
+.kpi-icon--info    { background: var(--color-primary-100); color: var(--color-primary-700); }
+
+.kpi-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-1);
+}
+.kpi-value {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.05;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+}
+.kpi-value--success { color: var(--color-secondary-500); }
+.kpi-value--danger  { color: var(--color-danger-600); }
+.kpi-value--warning { color: var(--color-warning-600); }
+
+.kpi-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    margin-top: var(--space-2);
+}
+.kpi-delta--up   { color: var(--color-secondary-500); }
+.kpi-delta--down { color: var(--color-danger-600); }
+.kpi-delta--flat { color: var(--text-muted); }
+
+.kpi-sparkline {
+    margin-top: var(--space-3);
+    height: 40px;
+    width: 100%;
+    color: var(--color-primary-600);
+}
+
+/* ----------------------------------------------------------------
+   STATUS PILLS GRANDES — para cabeceras de detalle
+   ---------------------------------------------------------------- */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .375rem .875rem;
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+.status-pill::before {
+    content: '';
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+.status-pill--planned     { background: rgba(245, 158, 11, .12); color: var(--color-warning-600); border-color: rgba(245, 158, 11, .3); }
+.status-pill--in-progress { background: var(--color-primary-100); color: var(--color-primary-700); border-color: rgba(30, 127, 200, .3); }
+.status-pill--completed   { background: rgba(46, 158, 101, .12); color: var(--color-secondary-700); border-color: rgba(46, 158, 101, .3); }
+.status-pill--cancelled   { background: var(--gray-100); color: var(--gray-600); border-color: var(--gray-200); }
+.status-pill--low         { background: rgba(239, 68, 68, .1); color: var(--color-danger-600); border-color: rgba(239, 68, 68, .3); }
+.status-pill--ok          { background: rgba(46, 158, 101, .12); color: var(--color-secondary-700); border-color: rgba(46, 158, 101, .3); }
+.status-pill--high        { background: var(--color-primary-100); color: var(--color-primary-700); border-color: rgba(30, 127, 200, .3); }
+
+/* ----------------------------------------------------------------
+   PAGE HEADER — patrón unificado para vistas internas
+   ---------------------------------------------------------------- */
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-6);
+    padding-bottom: var(--space-5);
+    margin-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border-default);
+}
+.page-header__title {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    font-weight: 800;
+    color: var(--text-heading);
+    line-height: 1.15;
+    letter-spacing: -.025em;
+    margin-bottom: var(--space-2);
+}
+.page-header__subtitle {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+.page-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------------
+   TABLAS PROFESIONALES — table-pro: hover, striping sutil, sticky
+   ---------------------------------------------------------------- */
+.table-pro {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--surface-card);
+}
+.table-pro thead th {
+    background: var(--gray-50);
+    color: var(--text-secondary);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    border-bottom: 1px solid var(--border-default);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+html.dark .table-pro thead th { background: rgba(91, 184, 232, .04); }
+.table-pro tbody tr {
+    transition: background-color var(--transition-fast);
+}
+.table-pro tbody tr:hover {
+    background-color: var(--color-primary-100);
+}
+html.dark .table-pro tbody tr:hover {
+    background-color: rgba(91, 184, 232, .08);
+}
+.table-pro tbody tr:not(:last-child) td {
+    border-bottom: 1px solid var(--border-muted);
+}
+.table-pro tbody td {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+.table-pro .col-num { text-align: right; font-variant-numeric: tabular-nums; }
+.table-pro .col-center { text-align: center; }
+.table-pro .col-actions { text-align: right; white-space: nowrap; }
+
+/* Wrapper que hace la tabla scrollable horizontalmente sin romper sticky */
+.table-wrap {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-default);
+    overflow: hidden;
+    background: var(--surface-card);
+    box-shadow: var(--elevation-1);
+}
+.table-wrap--scroll { overflow-x: auto; }
+
+/* ----------------------------------------------------------------
+   EMPTY STATES ILUSTRADOS
+   ---------------------------------------------------------------- */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12) var(--space-6);
+    text-align: center;
+    color: var(--text-secondary);
+}
+.empty-state__illustration {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-brand-soft);
+    color: var(--color-primary-600);
+    margin-bottom: var(--space-4);
+    box-shadow: var(--elevation-2);
+}
+.empty-state__title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-lg);
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+}
+.empty-state__hint {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+    max-width: 32ch;
+}
+
+/* ----------------------------------------------------------------
+   SKELETON LOADER
+   ---------------------------------------------------------------- */
+@keyframes skeleton-pulse {
+    0% { opacity: 1; }
+    50% { opacity: .55; }
+    100% { opacity: 1; }
+}
+.skeleton {
+    background: linear-gradient(90deg, var(--gray-100) 0%, var(--gray-200) 50%, var(--gray-100) 100%);
+    background-size: 200% 100%;
+    border-radius: var(--radius-sm);
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
+    display: inline-block;
+}
+html.dark .skeleton {
+    background: linear-gradient(90deg, var(--surface-card) 0%, rgba(91,184,232,.08) 50%, var(--surface-card) 100%);
+    background-size: 200% 100%;
+}
+
+/* ----------------------------------------------------------------
+   SIDEBAR PREMIUM — con secciones tipográficas, separadores, footer
+   ---------------------------------------------------------------- */
+.sidebar-pro {
+    background: var(--gradient-night);
+    color: var(--gray-100);
+    width: 16rem;
+    flex-shrink: 0;
+    /* Sticky bajo el navbar (~60px) — el sidebar no scrollea con el contenido */
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-5) var(--space-3);
+}
+@media (max-width: 768px) {
+    .sidebar-pro { display: none; }  /* TODO: drawer móvil con Alpine */
+}
+.sidebar-pro::before {
+    /* línea de marca sutil al borde derecho */
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, transparent 0%, rgba(91, 184, 232, .35) 30%, rgba(91, 184, 232, .35) 70%, transparent 100%);
+}
+
+.sidebar-pro__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0 var(--space-3) var(--space-5);
+    margin-bottom: var(--space-3);
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+.sidebar-pro__brand-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius);
+    background: rgba(91, 184, 232, .18);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary-400);
+    flex-shrink: 0;
+}
+.sidebar-pro__brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-base);
+    color: white;
+    letter-spacing: -.01em;
+}
+.sidebar-pro__brand-org {
+    font-size: var(--text-xs);
+    color: var(--sidebar-text-muted);
+    margin-top: 1px;
+}
+
+.sidebar-pro__section-label {
+    padding: 0 var(--space-3);
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-1);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: rgba(255, 255, 255, .35);
+}
+
+.sidebar-pro__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: .5rem var(--space-3);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--sidebar-text-primary);
+    text-decoration: none;
+    transition:
+        background-color var(--transition-base),
+        color var(--transition-base),
+        padding-left var(--transition-base);
+    position: relative;
+}
+.sidebar-pro__link svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    opacity: .7;
+    transition: opacity var(--transition-base);
+}
+.sidebar-pro__link:hover {
+    background-color: rgba(255, 255, 255, .06);
+    color: white;
+}
+.sidebar-pro__link:hover svg { opacity: 1; }
+.sidebar-pro__link--active {
+    background-color: rgba(91, 184, 232, .14);
+    color: white;
+    padding-left: calc(var(--space-3) + 4px);
+}
+.sidebar-pro__link--active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 25%;
+    bottom: 25%;
+    width: 3px;
+    background: var(--color-primary-400);
+    border-radius: 0 2px 2px 0;
+}
+.sidebar-pro__link--active svg { opacity: 1; color: var(--color-primary-400); }
+
+.sidebar-pro__footer {
+    margin-top: auto;
+    padding: var(--space-4) var(--space-3) 0;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, .35);
+    text-align: center;
+}
+
+/* ----------------------------------------------------------------
+   NAVBAR PREMIUM — con avatar y notificaciones
+   ---------------------------------------------------------------- */
+.navbar-pro {
+    background: var(--gradient-night);
+    color: var(--text-inverse);
+    padding: var(--space-3) var(--space-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    box-shadow: var(--elevation-2);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+.navbar-pro__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+.navbar-pro__icon-box {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius);
+    background: rgba(91, 184, 232, .18);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary-400);
+}
+.navbar-pro__brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-base);
+    color: white;
+    letter-spacing: -.01em;
+}
+.navbar-pro__brand-sub {
+    font-size: var(--text-xs);
+    color: rgba(255, 255, 255, .55);
+    line-height: 1.1;
+    margin-top: 1px;
+}
+.navbar-pro__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+.navbar-pro__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    padding: .25rem .625rem;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, .08);
+    color: rgba(255, 255, 255, .85);
+    font-size: var(--text-xs);
+    font-weight: 600;
+}
+.navbar-pro__chip svg { width: .875rem; height: .875rem; opacity: .8; }
+
+.navbar-pro__icon-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, .08);
+    color: white;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--transition-base);
+    position: relative;
+}
+.navbar-pro__icon-btn:hover { background: rgba(255, 255, 255, .14); }
+.navbar-pro__icon-btn svg { width: 1.125rem; height: 1.125rem; }
+.navbar-pro__icon-btn--badge::after {
+    content: '';
+    position: absolute;
+    top: .375rem; right: .375rem;
+    width: .5rem; height: .5rem;
+    border-radius: 50%;
+    background: var(--color-warning);
+    border: 2px solid var(--color-primary-900);
+}
+
+.navbar-pro__avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    border: 2px solid rgba(255, 255, 255, .18);
+    cursor: pointer;
+    transition: transform var(--transition-base), border-color var(--transition-base);
+}
+.navbar-pro__avatar:hover {
+    transform: scale(1.05);
+    border-color: var(--color-primary-400);
+}
+
+/* ----------------------------------------------------------------
+   MENÚ DROPDOWN (navbar avatar, etc)
+   ---------------------------------------------------------------- */
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: background-color var(--transition-base);
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+.menu-item:hover { background-color: var(--gray-100); }
+html.dark .menu-item:hover { background-color: rgba(91, 184, 232, .08); }
+
+/* Hover row para listas tipo dashboard alert */
+.alert-row:hover { background-color: rgba(239, 68, 68, .04); }
+html.dark .alert-row:hover { background-color: rgba(239, 68, 68, .08); }
+
+/* ----------------------------------------------------------------
+   QUICK ACTIONS / FLOATING — botón de acción primaria flotante
+   ---------------------------------------------------------------- */
+.fab {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    color: white;
+    box-shadow: var(--elevation-brand);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 40;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+.fab:hover { transform: scale(1.05) rotate(8deg); box-shadow: var(--elevation-4); }
+.fab svg { width: 1.5rem; height: 1.5rem; }
+
+/* ----------------------------------------------------------------
+   ICONOGRAFÍA HELPER
+   ---------------------------------------------------------------- */
+.icon { width: 1rem; height: 1rem; flex-shrink: 0; vertical-align: middle; }
+.icon-sm { width: .875rem; height: .875rem; }
+.icon-lg { width: 1.5rem; height: 1.5rem; }
+.icon-xl { width: 2rem; height: 2rem; }
+
+/* ----------------------------------------------------------------
+   ANIMACIONES
+   ---------------------------------------------------------------- */
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fade-in-up 320ms ease-out both; }
+
+@keyframes slide-down {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ----------------------------------------------------------------
+   FORM PRO — inputs con afinado de foco
+   ---------------------------------------------------------------- */
+.input-pro {
+    background-color: var(--surface-input);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius);
+    padding: .625rem .875rem;
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
+}
+.input-pro:hover:not(:focus) {
+    border-color: var(--color-primary-400);
+}
+.input-pro:focus {
+    outline: none;
+    border-color: var(--color-primary-600);
+    box-shadow: var(--ring-brand);
+}
+
+/* ----------------------------------------------------------------
+   DIVIDER — separador con label
+   ---------------------------------------------------------------- */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin: var(--space-5) 0 var(--space-3);
+}
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-default);
+}

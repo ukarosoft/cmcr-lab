@@ -1,36 +1,66 @@
-<table style="width: 100%; border-collapse: collapse;">
+<table class="table-pro">
     <thead>
         <tr>
-            <th scope="col" class="th-base">Lote</th>
-            <th scope="col" class="th-base">Reactivo</th>
-            <th scope="col" class="th-base text-right">Cantidad</th>
-            <th scope="col" class="th-base">Estado</th>
-            <th scope="col" class="th-base">Creado</th>
+            <th scope="col">Lote</th>
+            <th scope="col">Reactivo</th>
+            <th scope="col" class="col-num">Cantidad</th>
+            <th scope="col">Estado</th>
+            <th scope="col" style="width: 9rem;">Creado</th>
         </tr>
     </thead>
     <tbody>
         {% for o in orders %}
         <tr>
-            <td class="td-base">
-                <a href="{% url 'lab_inventory:order_detail' o.pk %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">{{ o.batch_number }}</a>
+            <td>
+                <a href="{% url 'lab_inventory:order_detail' o.pk %}" style="text-decoration: none; color: inherit;">
+                    <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-primary-700); padding: .125rem .5rem; background: var(--color-primary-100); border-radius: var(--radius-sm); font-size: var(--text-xs);">
+                        OP-{{ o.batch_number }}
+                    </span>
+                </a>
             </td>
-            <td class="td-base">{{ o.reagent.name }}</td>
-            <td class="td-base text-right">{{ o.quantity }}</td>
-            <td class="td-base">
+            <td>
+                <a href="{% url 'lab_inventory:order_detail' o.pk %}" style="color: var(--text-primary); font-weight: 600; text-decoration: none;">
+                    {{ o.reagent.name }}
+                </a>
+            </td>
+            <td class="col-num">
+                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">{{ o.quantity }}</span>
+                <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ o.reagent.yield_unit.abbreviation }}</span>
+            </td>
+            <td>
                 {% if o.status == 'planned' %}
-                    <span class="badge badge-warning">Planificada</span>
+                    <span class="status-pill status-pill--planned">Planificada</span>
                 {% elif o.status == 'in_progress' %}
-                    <span class="badge badge-info">En proceso</span>
+                    <span class="status-pill status-pill--in-progress">En proceso</span>
                 {% elif o.status == 'completed' %}
-                    <span class="badge badge-success">Completada</span>
+                    <span class="status-pill status-pill--completed">Completada</span>
                 {% else %}
-                    <span class="badge badge-neutral">Cancelada</span>
+                    <span class="status-pill status-pill--cancelled">Cancelada</span>
                 {% endif %}
             </td>
-            <td class="td-base" style="color: var(--text-secondary); font-size: var(--text-xs);">{{ o.created_at|date:"d/m/Y" }}</td>
+            <td>
+                <div style="font-size: var(--text-xs); color: var(--text-secondary);">{{ o.created_at|date:"d/m/Y" }}</div>
+                <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ o.created_at|date:"H:i" }}</div>
+            </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="td-base text-center" style="padding: 3rem;">No hay órdenes de producción.</td></tr>
+        <tr>
+            <td colspan="5">
+                <div class="empty-state">
+                    <div class="empty-state__illustration">
+                        <svg class="icon-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                        </svg>
+                    </div>
+                    <h3 class="empty-state__title">Sin órdenes de producción</h3>
+                    <p class="empty-state__hint">Crea la primera orden para comenzar a producir reactivos.</p>
+                    <a href="{% url 'lab_inventory:order_create' %}" class="btn-primary">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Crear primera orden
+                    </a>
+                </div>
+            </td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>

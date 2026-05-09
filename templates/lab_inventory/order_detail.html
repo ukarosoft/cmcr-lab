@@ -1,58 +1,102 @@
 {% extends 'base.html' %}
 
-{% block title %}OP {{ order.batch_number }} — CMCR Lab{% endblock %}
+{% block title %}OP-{{ order.batch_number }} — CMCR Lab{% endblock %}
 
 {% block content %}
-<div class="flex">
+<div style="display: flex;">
     {% include 'components/_sidebar.html' %}
 
-    <div class="flex-1 p-6 lg:p-8">
-        <a href="{% url 'lab_inventory:order_list' %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none; display: inline-block; margin-bottom: 1rem;">← Volver a órdenes</a>
+    <div class="animate-in" style="flex: 1; min-width: 0; padding: var(--space-6) var(--space-8); max-width: 1400px;">
 
-        <div class="flex items-start justify-between mb-4">
-            <div>
-                <h1 class="text-title">{{ order.reagent.name }}</h1>
-                <p style="font-family: var(--font-mono); color: var(--text-secondary); font-size: var(--text-sm);">OP — {{ order.batch_number }}</p>
-            </div>
-            <div class="flex gap-2" x-data="{ confirmAction: null }">
-                {% if order.status == 'planned' %}
-                    <button type="button" @click="confirmAction = 'start'" class="btn-warning">Iniciar producción</button>
-                    <button type="button" @click="confirmAction = 'cancel'" class="btn-ghost btn-cancel">Cancelar</button>
-                {% elif order.status == 'in_progress' %}
-                    <button type="button" @click="confirmAction = 'complete'" class="btn-secondary">Completar</button>
-                    <button type="button" @click="confirmAction = 'cancel'" class="btn-ghost btn-cancel">Cancelar</button>
-                {% endif %}
+        <!-- Breadcrumb -->
+        <nav aria-label="Breadcrumb" style="margin-bottom: var(--space-4);">
+            <ol style="display: flex; align-items: center; gap: var(--space-2); list-style: none; padding: 0; font-size: var(--text-xs); color: var(--text-muted);">
+                <li><a href="{% url 'lab_inventory:dashboard' %}" style="color: var(--text-secondary); text-decoration: none;">Inicio</a></li>
+                <li aria-hidden="true">/</li>
+                <li><a href="{% url 'lab_inventory:order_list' %}" style="color: var(--text-secondary); text-decoration: none;">Órdenes</a></li>
+                <li aria-hidden="true">/</li>
+                <li aria-current="page" style="color: var(--text-primary); font-weight: 500;">OP-{{ order.batch_number }}</li>
+            </ol>
+        </nav>
 
-                <!-- Diálogos de confirmación -->
+        <!-- Hero header con status pill grande, acciones contextuales -->
+        <header class="card-pro card-pro--flat" style="padding: var(--space-6); margin-bottom: var(--space-5); position: relative; overflow: hidden;">
+            <div aria-hidden="true" style="position: absolute; top: 0; right: 0; width: 240px; height: 240px;
+                                           background: radial-gradient(circle at top right,
+                                               {% if order.status == 'planned' %}rgba(245,158,11,.16)
+                                               {% elif order.status == 'in_progress' %}rgba(30,127,200,.16)
+                                               {% elif order.status == 'completed' %}rgba(46,158,101,.16)
+                                               {% else %}rgba(148,163,184,.14){% endif %}, transparent 70%);
+                                           pointer-events: none;"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); position: relative;" x-data="{ confirmAction: null }">
+                <div style="display: flex; align-items: flex-start; gap: var(--space-4); min-width: 0; flex: 1;">
+                    <div style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-lg);
+                                background: var(--gradient-secondary); color: white;
+                                display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+                                box-shadow: var(--elevation-success);">
+                        <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                        </svg>
+                    </div>
+                    <div style="min-width: 0;">
+                        <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-1);">
+                            <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-primary-700); padding: .125rem .5rem; background: var(--color-primary-100); border-radius: var(--radius-sm); font-weight: 700;">
+                                OP-{{ order.batch_number }}
+                            </span>
+                            {% if order.status == 'planned' %}
+                                <span class="status-pill status-pill--planned">Planificada</span>
+                            {% elif order.status == 'in_progress' %}
+                                <span class="status-pill status-pill--in-progress">En proceso</span>
+                            {% elif order.status == 'completed' %}
+                                <span class="status-pill status-pill--completed">Completada</span>
+                            {% else %}
+                                <span class="status-pill status-pill--cancelled">Cancelada</span>
+                            {% endif %}
+                        </div>
+                        <h1 class="page-header__title" style="margin-bottom: var(--space-1);">{{ order.reagent.name }}</h1>
+                        <p style="color: var(--text-secondary); font-size: var(--text-sm); margin: 0;">
+                            Producir <strong style="color: var(--text-primary); font-family: var(--font-mono);">{{ order.quantity }} {{ order.reagent.yield_unit.abbreviation }}</strong>
+                            {% if order.created_by %}· creada por {{ order.created_by.get_full_name|default:order.created_by.username }}{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Acciones contextuales por estado -->
+                <div style="display: flex; gap: var(--space-2); flex-shrink: 0;">
+                    {% if order.status == 'planned' %}
+                        <button type="button" @click="confirmAction = 'start'" class="btn-warning">
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
+                            Iniciar producción
+                        </button>
+                        <button type="button" @click="confirmAction = 'cancel'" class="btn-ghost btn-cancel">Cancelar</button>
+                    {% elif order.status == 'in_progress' %}
+                        <button type="button" @click="confirmAction = 'complete'" class="btn-secondary">
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            Completar
+                        </button>
+                        <button type="button" @click="confirmAction = 'cancel'" class="btn-ghost btn-cancel">Cancelar</button>
+                    {% endif %}
+                </div>
+
+                <!-- Modal de confirmación (mantenido del L3) -->
                 <div x-show="confirmAction !== null" x-transition.opacity
-                     class="modal-backdrop"
                      @click.self="confirmAction = null"
                      @keydown.escape.window="confirmAction = null"
                      style="position: fixed; inset: 0; background: var(--overlay-bg); display: flex; align-items: center; justify-content: center; z-index: 100;">
-                    <div class="card" style="max-width: 480px; width: 90%;" @click.stop role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
-                        <h3 id="confirm-title" style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">
-                            <span x-show="confirmAction === 'start'">Iniciar producción de OP {{ order.batch_number }}</span>
-                            <span x-show="confirmAction === 'complete'">Completar OP {{ order.batch_number }}</span>
-                            <span x-show="confirmAction === 'cancel'">Cancelar OP {{ order.batch_number }}</span>
+                    <div class="card-pro" style="max-width: 480px; width: 90%;" @click.stop role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+                        <h3 id="confirm-title" style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-3);">
+                            <span x-show="confirmAction === 'start'">Iniciar OP-{{ order.batch_number }}</span>
+                            <span x-show="confirmAction === 'complete'">Completar OP-{{ order.batch_number }}</span>
+                            <span x-show="confirmAction === 'cancel'">Cancelar OP-{{ order.batch_number }}</span>
                         </h3>
-                        <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: 1.5rem;">
-                            <span x-show="confirmAction === 'start'">
-                                Se consumirán los insumos del inventario y se generará un movimiento de salida por cada uno. Esta acción queda registrada en auditoría.
-                            </span>
-                            <span x-show="confirmAction === 'complete'">
-                                Marcará la orden como completada. No se puede revertir.
-                            </span>
-                            <span x-show="confirmAction === 'cancel'">
-                                {% if order.status == 'in_progress' %}
-                                Se crearán entradas compensatorias para revertir los consumos. La orden queda como Cancelada.
-                                {% else %}
-                                La orden queda como Cancelada. No se puede reactivar.
-                                {% endif %}
-                            </span>
+                        <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-5); line-height: 1.6;">
+                            <span x-show="confirmAction === 'start'">Se consumirán los insumos del inventario y se generará un movimiento de salida por cada uno. La acción queda registrada en auditoría.</span>
+                            <span x-show="confirmAction === 'complete'">Marcará la orden como completada. No se puede revertir.</span>
+                            <span x-show="confirmAction === 'cancel'">{% if order.status == 'in_progress' %}Se crearán entradas compensatorias para revertir los consumos. La orden queda como Cancelada.{% else %}La orden queda como Cancelada. No se puede reactivar.{% endif %}</span>
                         </p>
-                        <div class="flex items-center justify-end gap-3">
+                        <div style="display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2);">
                             <button type="button" @click="confirmAction = null" class="btn-ghost">Volver</button>
-
                             <form x-show="confirmAction === 'start'" method="post" action="{% url 'lab_inventory:order_start' order.pk %}" style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-warning">Sí, iniciar</button>
@@ -69,104 +113,187 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </header>
 
         {% if errors %}
-        <div class="alert alert-error" role="alert">
-            <p style="font-weight: 600; margin-bottom: 0.5rem;">No se puede iniciar la producción:</p>
-            <ul style="padding-left: 1.25rem;">
+        <div class="alert alert-error animate-in" role="alert" style="margin-bottom: var(--space-5);">
+            <p style="font-weight: 700; margin-bottom: var(--space-2); display: flex; align-items: center; gap: var(--space-2);">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                No se puede iniciar la producción
+            </p>
+            <ul style="padding-left: 1.5rem; margin: 0; line-height: 1.7;">
                 {% for e in errors %}<li>{{ e }}</li>{% endfor %}
             </ul>
         </div>
         {% endif %}
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="card">
-                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Estado</p>
-                <p style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">{{ order.get_status_display }}</p>
-            </div>
-            <div class="card">
-                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Cantidad a producir</p>
-                <p style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">{{ order.quantity }}</p>
-            </div>
-            <div class="card">
-                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Creado</p>
-                <p style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">{{ order.created_at|date:"d/m/Y H:i" }}</p>
-            </div>
-            <div class="card">
-                <p style="color: var(--text-secondary); font-size: var(--text-xs);">
-                    {% if order.status == 'completed' %}Completado{% elif order.status == 'cancelled' %}Cancelado{% elif order.started_at %}Iniciado{% else %}—{% endif %}
-                </p>
-                <p style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">
-                    {% if order.completed_at %}{{ order.completed_at|date:"d/m/Y H:i" }}{% elif order.started_at %}{{ order.started_at|date:"d/m/Y H:i" }}{% else %}—{% endif %}
-                </p>
+        <!-- Timeline de estados -->
+        <div class="card-pro card-pro--flat" style="margin-bottom: var(--space-5); padding: var(--space-5);">
+            <h3 style="font-family: var(--font-display); font-size: var(--text-sm); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; margin-bottom: var(--space-4);">Línea de tiempo</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); position: relative;">
+                <!-- Línea conectora -->
+                <div aria-hidden="true" style="position: absolute; top: 14px; left: 8%; right: 8%; height: 2px; background: var(--border-default); z-index: 0;"></div>
+                {% if order.started_at or order.status == 'completed' or order.status == 'in_progress' %}
+                <div aria-hidden="true" style="position: absolute; top: 14px; left: 8%; height: 2px;
+                    width: {% if order.status == 'completed' or order.status == 'cancelled' %}84%{% else %}42%{% endif %};
+                    background: var(--color-primary-600); z-index: 0; transition: width var(--transition-slow);"></div>
+                {% endif %}
+
+                <!-- Stage 1: Creada -->
+                <div style="text-align: center; position: relative; z-index: 1;">
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-secondary-500); color: white; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px var(--surface-card);">
+                        <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <div style="font-size: var(--text-xs); font-weight: 600; color: var(--text-primary); margin-top: var(--space-2);">Creada</div>
+                    <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ order.created_at|date:"d/m/Y H:i" }}</div>
+                </div>
+
+                <!-- Stage 2: Iniciada -->
+                <div style="text-align: center; position: relative; z-index: 1;">
+                    {% if order.started_at or order.status == 'completed' %}
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-primary-600); color: white; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px var(--surface-card);">
+                        <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    {% else %}
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gray-200); color: var(--gray-500); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px var(--surface-card); font-weight: 700; font-size: var(--text-xs);">2</div>
+                    {% endif %}
+                    <div style="font-size: var(--text-xs); font-weight: 600; color: {% if order.started_at or order.status == 'completed' %}var(--text-primary){% else %}var(--text-muted){% endif %}; margin-top: var(--space-2);">Iniciada</div>
+                    <div style="font-size: var(--text-xs); color: var(--text-muted);">{% if order.started_at %}{{ order.started_at|date:"d/m/Y H:i" }}{% else %}Pendiente{% endif %}</div>
+                </div>
+
+                <!-- Stage 3: Completada -->
+                <div style="text-align: center; position: relative; z-index: 1;">
+                    {% if order.status == 'completed' %}
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-secondary-500); color: white; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px var(--surface-card);">
+                        <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    {% elif order.status == 'cancelled' %}
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gray-400); color: white; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px var(--surface-card);">
+                        <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </div>
+                    {% else %}
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gray-200); color: var(--gray-500); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px var(--surface-card); font-weight: 700; font-size: var(--text-xs);">3</div>
+                    {% endif %}
+                    <div style="font-size: var(--text-xs); font-weight: 600; color: {% if order.status == 'completed' or order.status == 'cancelled' %}var(--text-primary){% else %}var(--text-muted){% endif %}; margin-top: var(--space-2);">
+                        {% if order.status == 'cancelled' %}Cancelada{% else %}Completada{% endif %}
+                    </div>
+                    <div style="font-size: var(--text-xs); color: var(--text-muted);">{% if order.completed_at %}{{ order.completed_at|date:"d/m/Y H:i" }}{% else %}Pendiente{% endif %}</div>
+                </div>
             </div>
         </div>
 
         {% if order.notes %}
-        <div class="card mb-6">
-            <p style="color: var(--text-secondary); font-size: var(--text-xs); margin-bottom: 0.25rem;">Observaciones</p>
-            <p style="color: var(--text-primary); font-size: var(--text-sm);">{{ order.notes }}</p>
+        <div class="card-pro card-pro--flat" style="margin-bottom: var(--space-5);">
+            <h3 style="font-family: var(--font-display); font-size: var(--text-sm); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; margin-bottom: var(--space-2);">Observaciones</h3>
+            <p style="color: var(--text-primary); font-size: var(--text-sm); line-height: 1.6;">{{ order.notes }}</p>
         </div>
         {% endif %}
 
-        <h3 class="text-subtitle" style="margin-bottom: 0.75rem;">Insumos requeridos</h3>
-        {% if needed_items %}
-        <div class="card mb-6" style="padding: 0; overflow: hidden;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <th scope="col" class="th-base">Insumo</th>
-                        <th scope="col" class="th-base text-right">Necesario</th>
-                        <th scope="col" class="th-base text-right">Disponible</th>
-                        <th scope="col" class="th-base">Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in needed_items %}
-                    <tr>
-                        <td class="td-base">{{ item.supply.name }}</td>
-                        <td class="td-base text-right" style="font-weight: 500;">{{ item.required_qty|floatformat:4 }} {{ item.unit.abbreviation }}</td>
-                        <td class="td-base text-right">{{ item.current_stock|floatformat:4 }} {{ item.supply.unit.abbreviation }}</td>
-                        <td class="td-base">
-                            {% if item.current_stock >= item.required_qty %}
-                                <span class="badge badge-success">Suficiente</span>
-                            {% else %}
-                                <span class="badge badge-error">Insuficiente</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p class="card text-center" style="color: var(--text-muted); font-size: var(--text-sm);">Este reactivo no tiene receta configurada.</p>
-        {% endif %}
+        <!-- Insumos requeridos -->
+        <section class="card-pro card-pro--flat" style="padding: 0; overflow: hidden; margin-bottom: var(--space-5);">
+            <div style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-5); border-bottom: 1px solid var(--border-default);">
+                <div style="width: 2.25rem; height: 2.25rem; border-radius: var(--radius); background: var(--color-primary-100); color: var(--color-primary-700); display: inline-flex; align-items: center; justify-content: center;">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); color: var(--text-primary); line-height: 1.2;">Insumos requeridos</h2>
+                    <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px;">Calculado a partir de la receta del reactivo</p>
+                </div>
+            </div>
+
+            {% if needed_items %}
+            <div class="table-wrap" style="border: none; border-radius: 0; box-shadow: none;">
+                <table class="table-pro">
+                    <thead>
+                        <tr>
+                            <th scope="col">Insumo</th>
+                            <th scope="col" class="col-num">Necesario</th>
+                            <th scope="col" class="col-num">Disponible</th>
+                            <th scope="col">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in needed_items %}
+                        <tr>
+                            <td style="font-weight: 500;">{{ item.supply.name }}</td>
+                            <td class="col-num">
+                                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">{{ item.required_qty|floatformat:4 }}</span>
+                                <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ item.unit.abbreviation }}</span>
+                            </td>
+                            <td class="col-num">
+                                <span style="font-family: var(--font-mono); color: var(--text-secondary);">{{ item.current_stock|floatformat:4 }}</span>
+                                <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ item.supply.unit.abbreviation }}</span>
+                            </td>
+                            <td>
+                                {% if item.current_stock >= item.required_qty %}
+                                    <span class="status-pill status-pill--ok">Suficiente</span>
+                                {% else %}
+                                    <span class="status-pill status-pill--low">Insuficiente</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state__illustration">
+                    <svg class="icon-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                    </svg>
+                </div>
+                <h3 class="empty-state__title">Receta no configurada</h3>
+                <p class="empty-state__hint">Este reactivo aún no tiene insumos asociados. Configúralos antes de iniciar producción.</p>
+                <a href="{% url 'lab_inventory:reagent_detail' order.reagent.pk %}" class="btn-primary">
+                    Configurar receta
+                </a>
+            </div>
+            {% endif %}
+        </section>
 
         {% if movements %}
-        <h3 class="text-subtitle" style="margin-bottom: 0.75rem;">Consumos registrados</h3>
-        <div class="card" style="padding: 0; overflow: hidden;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <th scope="col" class="th-base">Insumo</th>
-                        <th scope="col" class="th-base text-right">Cantidad</th>
-                        <th scope="col" class="th-base">Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for m in movements %}
-                    <tr>
-                        <td class="td-base">{{ m.supply.name }}</td>
-                        <td class="td-base text-right" style="color: var(--color-danger);">{{ m.quantity }}</td>
-                        <td class="td-base" style="color: var(--text-secondary); font-size: var(--text-xs);">{{ m.created_at|date:"d/m/Y H:i" }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <section class="card-pro card-pro--flat" style="padding: 0; overflow: hidden;">
+            <div style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-5); border-bottom: 1px solid var(--border-default);">
+                <div style="width: 2.25rem; height: 2.25rem; border-radius: var(--radius); background: rgba(46,158,101,.12); color: var(--color-secondary-700); display: inline-flex; align-items: center; justify-content: center;">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); color: var(--text-primary); line-height: 1.2;">Movimientos generados</h2>
+                    <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px;">Consumos y reversiones asociados a esta orden</p>
+                </div>
+            </div>
+            <div class="table-wrap" style="border: none; border-radius: 0; box-shadow: none;">
+                <table class="table-pro">
+                    <thead>
+                        <tr>
+                            <th scope="col">Insumo</th>
+                            <th scope="col" class="col-num">Cantidad</th>
+                            <th scope="col" style="width: 9rem;">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in movements %}
+                        <tr>
+                            <td style="font-weight: 500;">{{ m.supply.name }}</td>
+                            <td class="col-num">
+                                <span style="font-family: var(--font-mono); font-weight: 700; color: {% if m.quantity < 0 %}var(--color-danger-600){% else %}var(--color-secondary-500){% endif %};">
+                                    {% if m.quantity > 0 %}+{% endif %}{{ m.quantity }}
+                                </span>
+                            </td>
+                            <td style="font-size: var(--text-xs); color: var(--text-secondary); white-space: nowrap;">{{ m.created_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
         {% endif %}
+
     </div>
 </div>
 {% endblock %}
