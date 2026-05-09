@@ -3,136 +3,218 @@
 {% block title %}{{ reagent.name }} — CMCR Lab{% endblock %}
 
 {% block content %}
-<div class="flex">
+<div style="display: flex;">
     {% include 'components/_sidebar.html' %}
 
-    <div class="flex-1 p-6 lg:p-8">
-        <div class="mb-5 flex items-center justify-between">
-            <a href="{% url 'lab_inventory:reagent_list' %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">
-                ← Volver a reactivos
-            </a>
-            <div class="flex gap-3">
-                <a href="{% url 'lab_inventory:reagent_item_add' reagent.pk %}"
-                   style="background: var(--color-secondary-500); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); text-decoration: none;">
-                    + Agregar insumo
-                </a>
-                <a href="{% url 'lab_inventory:reagent_update' reagent.pk %}"
-                   style="background: var(--color-primary-600); color: #fff; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: var(--text-sm); text-decoration: none;">
-                    Editar
-                </a>
-            </div>
-        </div>
+    <div class="animate-in" style="flex: 1; min-width: 0; padding: var(--space-6) var(--space-8); max-width: 1400px;">
 
-        <h1 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem;">
-            {{ reagent.name }}
-        </h1>
+        <!-- Breadcrumb -->
+        <nav aria-label="Breadcrumb" style="margin-bottom: var(--space-4);">
+            <ol style="display: flex; align-items: center; gap: var(--space-2); list-style: none; padding: 0; font-size: var(--text-xs); color: var(--text-muted);">
+                <li><a href="{% url 'lab_inventory:dashboard' %}" style="color: var(--text-secondary); text-decoration: none;">Inicio</a></li>
+                <li aria-hidden="true">/</li>
+                <li><a href="{% url 'lab_inventory:reagent_list' %}" style="color: var(--text-secondary); text-decoration: none;">Reactivos</a></li>
+                <li aria-hidden="true">/</li>
+                <li aria-current="page" style="color: var(--text-primary); font-weight: 500;">{{ reagent.name|truncatechars:40 }}</li>
+            </ol>
+        </nav>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
-                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Código</p>
-                <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 600; font-family: var(--font-mono);">{{ reagent.code|default:'—' }}</p>
+        <!-- Hero header -->
+        <header class="card-pro card-pro--flat" style="padding: var(--space-6); margin-bottom: var(--space-5); position: relative; overflow: hidden;">
+            <div aria-hidden="true" style="position: absolute; top: 0; right: 0; width: 240px; height: 240px;
+                                           background: radial-gradient(circle at top right, rgba(46,158,101,.16), transparent 70%);
+                                           pointer-events: none;"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); position: relative;">
+                <div style="display: flex; align-items: flex-start; gap: var(--space-4); min-width: 0; flex: 1;">
+                    <div style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-lg);
+                                background: var(--gradient-secondary); color: white;
+                                display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+                                box-shadow: var(--elevation-success);">
+                        <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                        </svg>
+                    </div>
+                    <div style="min-width: 0;">
+                        <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-1);">
+                            {% if reagent.code %}
+                            <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); padding: .125rem .5rem; background: var(--gray-100); border-radius: var(--radius-sm);">
+                                {{ reagent.code }}
+                            </span>
+                            {% endif %}
+                            {% if reagent.tracks_batch %}
+                            <span style="font-size: 0.65rem; color: var(--color-primary-700); background: var(--color-primary-100); padding: 1px .5rem; border-radius: var(--radius-sm); font-weight: 700; letter-spacing: .04em;">CONTROL POR LOTE</span>
+                            {% endif %}
+                            {% if not reagent.is_active %}
+                            <span style="font-size: 0.65rem; color: var(--gray-700); background: var(--gray-200); padding: 1px .5rem; border-radius: var(--radius-sm); font-weight: 700; letter-spacing: .04em;">INACTIVO</span>
+                            {% endif %}
+                        </div>
+                        <h1 class="page-header__title" style="margin-bottom: var(--space-1);">{{ reagent.name }}</h1>
+                        <p style="color: var(--text-secondary); font-size: var(--text-sm); margin: 0;">
+                            Rendimiento por lote: <strong style="color: var(--text-primary); font-family: var(--font-mono);">{{ reagent.yield_quantity }} {{ reagent.yield_unit.abbreviation }}</strong>
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: var(--space-2); flex-shrink: 0;">
+                    <a href="{% url 'lab_inventory:reagent_item_add' reagent.pk %}" class="btn-ghost">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Agregar insumo
+                    </a>
+                    <a href="{% url 'lab_inventory:reagent_update' reagent.pk %}" class="btn-primary">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Editar
+                    </a>
+                </div>
             </div>
-            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
-                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Rendimiento</p>
-                <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 600;">{{ reagent.yield_quantity }} {{ reagent.yield_unit.abbreviation }}</p>
-            </div>
-            <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm);">
-                <p style="color: var(--text-secondary); font-size: var(--text-xs);">Lote</p>
-                <p style="color: var(--text-primary); font-size: var(--text-lg); font-weight: 500;">{% if reagent.tracks_batch %}Controlado{% else %}No controlado{% endif %}</p>
-            </div>
-        </div>
+        </header>
 
         {% if reagent.preparation_instructions %}
-        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem;">
-            <p style="color: var(--text-secondary); font-size: var(--text-xs); margin-bottom: 4px;">Instrucciones de preparación</p>
-            <p style="color: var(--text-primary); font-size: var(--text-sm); white-space: pre-wrap;">{{ reagent.preparation_instructions }}</p>
+        <div class="card-pro card-pro--flat" style="margin-bottom: var(--space-5); border-left: 4px solid var(--color-primary-600);">
+            <h3 style="font-family: var(--font-display); font-size: var(--text-sm); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; margin-bottom: var(--space-2); display: flex; align-items: center; gap: var(--space-2);">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Instrucciones de preparación
+            </h3>
+            <p style="color: var(--text-primary); font-size: var(--text-sm); line-height: 1.6; white-space: pre-wrap;">{{ reagent.preparation_instructions }}</p>
         </div>
         {% endif %}
 
-        <!-- Receta / Insumos -->
-        <h2 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">
-            Receta — Insumos requeridos
-        </h2>
+        <!-- Receta -->
+        <section class="card-pro card-pro--flat" style="padding: 0; overflow: hidden; margin-bottom: var(--space-5);">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-5); border-bottom: 1px solid var(--border-default);">
+                <div style="display: flex; align-items: center; gap: var(--space-3);">
+                    <div style="width: 2.25rem; height: 2.25rem; border-radius: var(--radius); background: var(--color-primary-100); color: var(--color-primary-700); display: inline-flex; align-items: center; justify-content: center;">
+                        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); color: var(--text-primary); line-height: 1.2;">Receta — Insumos requeridos</h2>
+                        <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px;">{{ reagent.items.count }} insumo{{ reagent.items.count|pluralize }} para producir {{ reagent.yield_quantity }} {{ reagent.yield_unit.abbreviation }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'lab_inventory:reagent_item_add' reagent.pk %}" class="btn-ghost" style="padding: .375rem .875rem; min-height: 32px;">
+                    <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    Agregar
+                </a>
+            </div>
 
-        {% if reagent.items.all %}
-        <div style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 1.5rem;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="border-bottom: 2px solid var(--border-default); background: var(--surface-body);">
-                        <th scope="col" class="th-base">Insumo</th>
-                        <th scope="col" class="th-base text-right">Cantidad</th>
-                        <th scope="col" class="th-base">Notas</th>
-                        <th scope="col" class="th-base text-center"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in reagent.items.all %}
-                    <tr style="border-bottom: 1px solid var(--border-default);">
-                        <td style="padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">
-                            <a href="{% url 'lab_inventory:supply_detail' item.supply.pk %}" style="color: var(--color-primary-600); text-decoration: none;">
-                                {{ item.supply.name }}
-                            </a>
-                            <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 4px;">({{ item.supply.current_stock }} {{ item.supply.unit.abbreviation }})</span>
-                        </td>
-                        <td style="text-align: right; padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary); font-weight: 500;">
-                            {{ item.quantity }} {{ item.unit.abbreviation }}
-                        </td>
-                        <td style="padding: 0.5rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">{{ item.notes|default:'—' }}</td>
-                        <td style="text-align: center; padding: 0.5rem 1rem;">
-                            <form method="post" action="{% url 'lab_inventory:reagent_item_delete' item.pk %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" style="background: none; border: none; color: var(--color-error-600); font-size: var(--text-xs); cursor: pointer;">Quitar</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div style="background: var(--surface-card); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm); text-align: center; margin-bottom: 1.5rem;">
-            <p style="color: var(--text-muted); font-size: var(--text-sm);">Sin insumos en la receta.</p>
-            <a href="{% url 'lab_inventory:reagent_item_add' reagent.pk %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">
-                Agregar primer insumo
-            </a>
-        </div>
-        {% endif %}
+            {% if reagent.items.all %}
+            <div class="table-wrap" style="border: none; border-radius: 0; box-shadow: none;">
+                <table class="table-pro">
+                    <thead>
+                        <tr>
+                            <th scope="col">Insumo</th>
+                            <th scope="col" class="col-num">Cantidad</th>
+                            <th scope="col">Stock disponible</th>
+                            <th scope="col">Notas</th>
+                            <th scope="col" class="col-actions"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in reagent.items.all %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'lab_inventory:supply_detail' item.supply.pk %}" style="color: var(--text-primary); font-weight: 600; text-decoration: none;">
+                                    {{ item.supply.name }}
+                                </a>
+                            </td>
+                            <td class="col-num">
+                                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">{{ item.quantity }}</span>
+                                <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ item.unit.abbreviation }}</span>
+                            </td>
+                            <td>
+                                <span style="font-family: var(--font-mono); color: var(--text-secondary); font-size: var(--text-sm);">{{ item.supply.current_stock }}</span>
+                                <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ item.supply.unit.abbreviation }}</span>
+                            </td>
+                            <td style="font-size: var(--text-xs); color: var(--text-muted);">{{ item.notes|default:'—' }}</td>
+                            <td class="col-actions">
+                                <form method="post" action="{% url 'lab_inventory:reagent_item_delete' item.pk %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-table btn-table-delete" aria-label="Quitar {{ item.supply.name }} de la receta">Quitar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state__illustration">
+                    <svg class="icon-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                </div>
+                <h3 class="empty-state__title">Receta sin insumos</h3>
+                <p class="empty-state__hint">Agrega los insumos que componen este reactivo para poder iniciar producción.</p>
+                <a href="{% url 'lab_inventory:reagent_item_add' reagent.pk %}" class="btn-primary">
+                    <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    Agregar primer insumo
+                </a>
+            </div>
+            {% endif %}
+        </section>
 
         <!-- Órdenes de producción -->
-        <h2 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">
-            Órdenes de producción
-        </h2>
+        <section class="card-pro card-pro--flat" style="padding: 0; overflow: hidden;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-5); border-bottom: 1px solid var(--border-default);">
+                <div style="display: flex; align-items: center; gap: var(--space-3);">
+                    <div style="width: 2.25rem; height: 2.25rem; border-radius: var(--radius); background: rgba(245,158,11,.14); color: var(--color-warning-600); display: inline-flex; align-items: center; justify-content: center;">
+                        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); color: var(--text-primary); line-height: 1.2;">Órdenes de producción</h2>
+                        <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px;">Histórico de producciones de este reactivo</p>
+                    </div>
+                </div>
+            </div>
 
-        {% if orders %}
-        <div style="background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="border-bottom: 2px solid var(--border-default); background: var(--surface-body);">
-                        <th scope="col" class="th-base">Lote</th>
-                        <th scope="col" class="th-base text-right">Cantidad</th>
-                        <th scope="col" class="th-base">Estado</th>
-                        <th scope="col" class="th-base">Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for o in orders %}
-                    <tr style="border-bottom: 1px solid var(--border-default);">
-                        <td style="padding: 0.5rem 1rem;">
-                            <a href="{% url 'lab_inventory:order_detail' o.pk %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none;">
-                                {{ o.batch_number }}
-                            </a>
-                        </td>
-                        <td style="text-align: right; padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">{{ o.quantity }}</td>
-                        <td style="padding: 0.5rem 1rem; font-size: var(--text-sm); color: var(--text-primary);">{{ o.get_status_display }}</td>
-                        <td style="padding: 0.5rem 1rem; font-size: var(--text-xs); color: var(--text-secondary);">{{ o.created_at|date:"d/m/Y" }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p style="color: var(--text-muted); font-size: var(--text-sm);">Sin órdenes de producción para este reactivo.</p>
-        {% endif %}
+            {% if orders %}
+            <div class="table-wrap" style="border: none; border-radius: 0; box-shadow: none;">
+                <table class="table-pro">
+                    <thead>
+                        <tr>
+                            <th scope="col">Lote</th>
+                            <th scope="col" class="col-num">Cantidad</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col" style="width: 9rem;">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in orders %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'lab_inventory:order_detail' o.pk %}" style="text-decoration: none;">
+                                    <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-primary-700); padding: .125rem .5rem; background: var(--color-primary-100); border-radius: var(--radius-sm); font-size: var(--text-xs);">
+                                        OP-{{ o.batch_number }}
+                                    </span>
+                                </a>
+                            </td>
+                            <td class="col-num">
+                                <span style="font-family: var(--font-mono); font-weight: 700;">{{ o.quantity }}</span>
+                                <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ reagent.yield_unit.abbreviation }}</span>
+                            </td>
+                            <td>
+                                {% if o.status == 'planned' %}<span class="status-pill status-pill--planned">Planificada</span>
+                                {% elif o.status == 'in_progress' %}<span class="status-pill status-pill--in-progress">En proceso</span>
+                                {% elif o.status == 'completed' %}<span class="status-pill status-pill--completed">Completada</span>
+                                {% else %}<span class="status-pill status-pill--cancelled">Cancelada</span>{% endif %}
+                            </td>
+                            <td style="font-size: var(--text-xs); color: var(--text-secondary);">{{ o.created_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p class="empty-state__hint">Aún no se ha producido este reactivo.</p>
+            </div>
+            {% endif %}
+        </section>
+
     </div>
 </div>
 {% endblock %}
