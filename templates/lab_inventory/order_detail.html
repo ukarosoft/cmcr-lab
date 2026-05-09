@@ -14,26 +14,60 @@
                 <h1 class="text-title">{{ order.reagent.name }}</h1>
                 <p style="font-family: var(--font-mono); color: var(--text-secondary); font-size: var(--text-sm);">OP — {{ order.batch_number }}</p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2" x-data="{ confirmAction: null }">
                 {% if order.status == 'planned' %}
-                    <form method="post" action="{% url 'lab_inventory:order_start' order.pk %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-primary" style="background: var(--color-warning-600);">Iniciar producción</button>
-                    </form>
-                    <form method="post" action="{% url 'lab_inventory:order_cancel' order.pk %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-ghost" style="color: var(--color-danger); border-color: var(--color-danger);">Cancelar</button>
-                    </form>
+                    <button type="button" @click="confirmAction = 'start'" class="btn-warning">Iniciar producción</button>
+                    <button type="button" @click="confirmAction = 'cancel'" class="btn-ghost btn-cancel">Cancelar</button>
                 {% elif order.status == 'in_progress' %}
-                    <form method="post" action="{% url 'lab_inventory:order_complete' order.pk %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-secondary">Completar</button>
-                    </form>
-                    <form method="post" action="{% url 'lab_inventory:order_cancel' order.pk %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-ghost" style="color: var(--color-danger); border-color: var(--color-danger);">Cancelar</button>
-                    </form>
+                    <button type="button" @click="confirmAction = 'complete'" class="btn-secondary">Completar</button>
+                    <button type="button" @click="confirmAction = 'cancel'" class="btn-ghost btn-cancel">Cancelar</button>
                 {% endif %}
+
+                <!-- Diálogos de confirmación -->
+                <div x-show="confirmAction !== null" x-transition.opacity
+                     class="modal-backdrop"
+                     @click.self="confirmAction = null"
+                     @keydown.escape.window="confirmAction = null"
+                     style="position: fixed; inset: 0; background: var(--overlay-bg); display: flex; align-items: center; justify-content: center; z-index: 100;">
+                    <div class="card" style="max-width: 480px; width: 90%;" @click.stop role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+                        <h3 id="confirm-title" style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">
+                            <span x-show="confirmAction === 'start'">Iniciar producción de OP {{ order.batch_number }}</span>
+                            <span x-show="confirmAction === 'complete'">Completar OP {{ order.batch_number }}</span>
+                            <span x-show="confirmAction === 'cancel'">Cancelar OP {{ order.batch_number }}</span>
+                        </h3>
+                        <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: 1.5rem;">
+                            <span x-show="confirmAction === 'start'">
+                                Se consumirán los insumos del inventario y se generará un movimiento de salida por cada uno. Esta acción queda registrada en auditoría.
+                            </span>
+                            <span x-show="confirmAction === 'complete'">
+                                Marcará la orden como completada. No se puede revertir.
+                            </span>
+                            <span x-show="confirmAction === 'cancel'">
+                                {% if order.status == 'in_progress' %}
+                                Se crearán entradas compensatorias para revertir los consumos. La orden queda como Cancelada.
+                                {% else %}
+                                La orden queda como Cancelada. No se puede reactivar.
+                                {% endif %}
+                            </span>
+                        </p>
+                        <div class="flex items-center justify-end gap-3">
+                            <button type="button" @click="confirmAction = null" class="btn-ghost">Volver</button>
+
+                            <form x-show="confirmAction === 'start'" method="post" action="{% url 'lab_inventory:order_start' order.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-warning">Sí, iniciar</button>
+                            </form>
+                            <form x-show="confirmAction === 'complete'" method="post" action="{% url 'lab_inventory:order_complete' order.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-secondary">Sí, completar</button>
+                            </form>
+                            <form x-show="confirmAction === 'cancel'" method="post" action="{% url 'lab_inventory:order_cancel' order.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-danger">Sí, cancelar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -82,10 +116,10 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr>
-                        <th class="th-base">Insumo</th>
-                        <th class="th-base text-right">Necesario</th>
-                        <th class="th-base text-right">Disponible</th>
-                        <th class="th-base">Estado</th>
+                        <th scope="col" class="th-base">Insumo</th>
+                        <th scope="col" class="th-base text-right">Necesario</th>
+                        <th scope="col" class="th-base text-right">Disponible</th>
+                        <th scope="col" class="th-base">Estado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -116,9 +150,9 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr>
-                        <th class="th-base">Insumo</th>
-                        <th class="th-base text-right">Cantidad</th>
-                        <th class="th-base">Fecha</th>
+                        <th scope="col" class="th-base">Insumo</th>
+                        <th scope="col" class="th-base text-right">Cantidad</th>
+                        <th scope="col" class="th-base">Fecha</th>
                     </tr>
                 </thead>
                 <tbody>

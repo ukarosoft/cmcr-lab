@@ -10,12 +10,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CDN (solo dev — en producción reemplazar con build local) -->
+    <!-- Tailwind CDN — decisión oficial Ukarasoft (ver docs/CLAUDE.md) -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Sistema de diseño Ukarasoft -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/ukaro.css' %}">
+
+    <!-- Anti-FOUC dark mode: aplicar tema antes del primer paint -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) { /* sesiones privadas estrictas */ }
+        })();
+    </script>
 
     <!-- HTMX 2.0.4 — con SRI para proteger integridad del script -->
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"
@@ -26,6 +37,8 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="h-full" style="background-color: var(--surface-body); font-family: var(--font-body);">
+
+    <a href="#main-content" class="skip-link">Saltar al contenido</a>
 
     {% if user.is_authenticated %}
         {% include 'components/_navbar.html' %}
