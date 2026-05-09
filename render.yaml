@@ -1,0 +1,60 @@
+# Render Blueprint — CMCR Lab
+# Tier C/B según deploy-stack-policy: demo cliente / validación pre-firma.
+# Para producción real (post-firma) → migrar a DigitalOcean.
+
+databases:
+  - name: cmcr-lab-db
+    plan: free          # 90 días, 256MB RAM, 1GB storage
+    databaseName: cmcr_lab
+    user: cmcr_lab
+    region: oregon
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: cmcr-lab
+    runtime: python
+    plan: free          # spin-down tras 15min inactividad — aceptable para demo
+    region: oregon
+    branch: main
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120 --access-logfile - --error-logfile -"
+    healthCheckPath: /healthz/
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.prod
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cmcr-lab-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: cmcr-lab.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://cmcr-lab.onrender.com
+      # Email mínimo (console backend para demo, sin SMTP real)
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.console.EmailBackend
+      - key: DEFAULT_FROM_EMAIL
+        value: noreply@cmcr-lab.onrender.com
+      # Credenciales iniciales — el cliente cambiará el password al primer login
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: ukaroadmin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: ing_simon@ukarosoft.com
+      - key: DJANGO_SUPERUSER_PASSWORD
+        generateValue: true
+      - key: CMCR_ADMIN_USERNAME
+        value: admin
+      - key: CMCR_ADMIN_EMAIL
+        value: admin@cmcr-lab.com
+      - key: CMCR_ADMIN_PASSWORD
+        sync: false       # se introduce manualmente en dashboard Render por seguridad
+      - key: LOAD_DEMO_DATA
+        value: "true"
