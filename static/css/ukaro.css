@@ -493,13 +493,101 @@ h1, h2, h3, h4, h5, h6 {
     outline-offset: 2px;
 }
 
-/* Respeta preferencia de movimiento reducido */
+/* Respeta preferencia de movimiento reducido (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
         transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
     }
 }
+
+/* Skip link — primer elemento del body, visible solo al recibir foco (WCAG 2.4.1) */
+.skip-link {
+    position: absolute;
+    top: -48px;
+    left: 0;
+    background-color: var(--color-primary-900);
+    color: var(--text-inverse);
+    padding: .75rem 1rem;
+    border-radius: 0 0 var(--radius) 0;
+    font-weight: 600;
+    text-decoration: none;
+    z-index: 1000;
+    transition: top var(--transition-base);
+}
+.skip-link:focus {
+    top: 0;
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------------
+   BOTONES COMPACTOS PARA ACCIONES DE TABLA
+   Mantiene legibilidad sin reventar la altura de fila;
+   el área tappable real llega a 44px vía pseudo-elemento (WCAG 2.5.5)
+   ---------------------------------------------------------------- */
+.btn-table {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .375rem .75rem;
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    min-height: 32px;
+    transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+.btn-table::before {
+    content: '';
+    position: absolute;
+    inset: -6px;  /* expande el target tappable a ~44px verticalmente */
+}
+.btn-table:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+
+.btn-table-edit {
+    color: var(--color-primary-600);
+    background-color: transparent;
+    border-color: var(--border-default);
+}
+.btn-table-edit:hover { background-color: var(--color-primary-100); border-color: var(--border-focus); }
+
+.btn-table-delete {
+    color: var(--text-inverse);
+    background-color: var(--color-danger);
+}
+.btn-table-delete:hover { background-color: var(--color-danger-600); }
+
+/* ----------------------------------------------------------------
+   BOTÓN WARNING — para acciones que NO son CTA primaria
+   pero requieren atención (Iniciar producción, etc.)
+   ---------------------------------------------------------------- */
+.btn-warning {
+    background-color: var(--color-warning-600);
+    color: var(--text-inverse);
+    padding: .5rem 1.25rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    min-height: 44px;
+    transition: background-color var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+}
+.btn-warning:hover  { background-color: var(--color-warning); }
+.btn-warning:focus  { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.btn-warning:active { transform: scale(.98); }
 
 /* ----------------------------------------------------------------
    DARK MODE HELPERS
