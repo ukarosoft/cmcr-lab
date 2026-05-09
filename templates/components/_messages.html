@@ -9,7 +9,11 @@
          {% else %}badge-info{% endif %}"
          style="min-width: 280px;">
         <span>{{ message }}</span>
-        <button @click="show = false" class="ml-auto opacity-60 hover:opacity-100">&#x2715;</button>
+        <button type="button" @click="show = false"
+                class="ml-auto opacity-60 hover:opacity-100"
+                aria-label="Cerrar mensaje">
+            <span aria-hidden="true">&#x2715;</span>
+        </button>
     </div>
     {% endfor %}
 </div>
