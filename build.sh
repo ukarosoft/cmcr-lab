@@ -1,17 +1,26 @@
 #!/usr/bin/env bash
-# Build script para Render — ejecuta en cada deploy
-set -o errexit  # exit on error
+# Build script para Render — usa django-admin para evitar manage.py setdefault.
+set -o errexit
 
-echo "==> Instalando dependencias de producción..."
+export DJANGO_SETTINGS_MODULE=config.settings.prod
+
+echo "==> Python: $(python --version)"
+echo "==> Settings: $DJANGO_SETTINGS_MODULE"
+
+echo "==> Instalando dependencias..."
 pip install -r requirements/prod.txt
 
-echo "==> Recolectando archivos estáticos (WhiteNoise)..."
-python manage.py collectstatic --noinput --settings=config.settings.prod
+echo "==> Verificando configuración..."
+django-admin check --deploy --fail-level WARNING || true
+django-admin check
 
-echo "==> Aplicando migraciones..."
-python manage.py migrate --noinput --settings=config.settings.prod
+echo "==> collectstatic (WhiteNoise)..."
+django-admin collectstatic --noinput
 
-echo "==> Creando datos iniciales (org CMCR + superadmin idempotente)..."
-python manage.py setup_initial_data --settings=config.settings.prod || true
+echo "==> migrate..."
+django-admin migrate --noinput
+
+echo "==> setup_initial_data (idempotente)..."
+django-admin setup_initial_data || echo "  (no crítico — continúa)"
 
 echo "==> Build completado ✓"
