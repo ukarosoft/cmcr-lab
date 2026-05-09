@@ -1,36 +1,76 @@
-<table style="width: 100%; border-collapse: collapse;">
+<table class="table-pro">
     <thead>
         <tr>
-            <th scope="col" class="th-base">Fecha</th>
-            <th scope="col" class="th-base">Insumo</th>
-            <th scope="col" class="th-base">Tipo</th>
-            <th scope="col" class="th-base text-right">Cantidad</th>
-            <th scope="col" class="th-base">Lote</th>
-            <th scope="col" class="th-base">Proveedor</th>
-            <th scope="col" class="th-base">Motivo</th>
+            <th scope="col" style="width: 9rem;">Fecha</th>
+            <th scope="col">Insumo</th>
+            <th scope="col">Tipo</th>
+            <th scope="col" class="col-num">Cantidad</th>
+            <th scope="col">Lote</th>
+            <th scope="col">Proveedor / Motivo</th>
         </tr>
     </thead>
     <tbody>
         {% for m in movements %}
         <tr>
-            <td class="td-base" style="font-size: var(--text-xs); color: var(--text-secondary); white-space: nowrap;">{{ m.created_at|date:"d/m/Y H:i" }}</td>
-            <td class="td-base">{{ m.supply.name }}</td>
-            <td class="td-base">
+            <td style="white-space: nowrap;">
+                <div style="font-size: var(--text-xs); color: var(--text-secondary);">{{ m.created_at|date:"d/m/Y" }}</div>
+                <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ m.created_at|date:"H:i" }}</div>
+            </td>
+            <td>
+                <a href="{% url 'lab_inventory:supply_detail' m.supply.pk %}" style="color: var(--text-primary); font-weight: 500; text-decoration: none;">
+                    {{ m.supply.name }}
+                </a>
+            </td>
+            <td>
                 {% if m.movement_type == 'entry' %}
-                    <span class="badge badge-success">Entrada</span>
+                    <span class="status-pill status-pill--ok">Entrada</span>
                 {% elif m.movement_type == 'exit' %}
-                    <span class="badge badge-error">Salida</span>
+                    <span class="status-pill status-pill--low">Salida</span>
                 {% else %}
-                    <span class="badge badge-warning">Ajuste</span>
+                    <span class="status-pill status-pill--planned">Ajuste</span>
                 {% endif %}
             </td>
-            <td class="td-base text-right" style="{% if m.quantity < 0 %}color: var(--color-danger);{% else %}color: var(--color-success);{% endif %}">{{ m.quantity }}</td>
-            <td class="td-base" style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-secondary);">{{ m.batch_number|default:'—' }}</td>
-            <td class="td-base" style="color: var(--text-secondary);">{{ m.supplier.name|default:'—' }}</td>
-            <td class="td-base" style="color: var(--text-secondary); font-size: var(--text-xs);">{{ m.reason|default:'—' }}</td>
+            <td class="col-num">
+                <span style="font-family: var(--font-mono); font-weight: 700; color: {% if m.quantity < 0 %}var(--color-danger-600){% else %}var(--color-secondary-500){% endif %};">
+                    {% if m.quantity > 0 %}+{% endif %}{{ m.quantity }}
+                </span>
+                <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ m.supply.unit.abbreviation }}</span>
+            </td>
+            <td>
+                {% if m.batch_number %}
+                <span style="font-family: var(--font-mono); font-size: var(--text-xs); padding: .125rem .5rem; background: var(--gray-100); border-radius: var(--radius-sm); color: var(--text-secondary);">{{ m.batch_number }}</span>
+                {% else %}
+                <span style="color: var(--text-muted);">—</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if m.supplier %}
+                <div style="font-size: var(--text-xs); color: var(--text-primary);">{{ m.supplier.name }}</div>
+                {% endif %}
+                {% if m.reason %}
+                <div style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 1px;">{{ m.reason|truncatechars:48 }}</div>
+                {% endif %}
+                {% if not m.supplier and not m.reason %}<span style="color: var(--text-muted);">—</span>{% endif %}
+            </td>
         </tr>
         {% empty %}
-        <tr><td colspan="7" class="td-base text-center" style="padding: 3rem;">Sin movimientos registrados.</td></tr>
+        <tr>
+            <td colspan="6">
+                <div class="empty-state">
+                    <div class="empty-state__illustration">
+                        <svg class="icon-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                        </svg>
+                    </div>
+                    <h3 class="empty-state__title">Sin movimientos registrados</h3>
+                    <p class="empty-state__hint">Cuando registres entradas, salidas o ajustes de stock aparecerán aquí.</p>
+                    <a href="{% url 'lab_inventory:movement_create' %}" class="btn-primary">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Registrar primer movimiento
+                    </a>
+                </div>
+            </td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
