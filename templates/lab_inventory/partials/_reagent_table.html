@@ -1,11 +1,11 @@
 <table style="width: 100%; border-collapse: collapse;">
     <thead>
         <tr>
-            <th  scope="col"class="th-base">Código</th>
-            <th  scope="col"class="th-base">Nombre</th>
-            <th  scope="col"class="th-base">Rendimiento</th>
-            <th  scope="col"class="th-base text-center">Ítems</th>
-            <th  scope="col"class="th-base text-center">Acciones</th>
+            <th scope="col" class="th-base">Código</th>
+            <th scope="col" class="th-base">Nombre</th>
+            <th scope="col" class="th-base">Rendimiento</th>
+            <th scope="col" class="th-base text-center">Ítems</th>
+            <th scope="col" class="th-base text-center">Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -18,8 +18,8 @@
             <td class="td-base" style="color: var(--text-secondary);">{{ r.yield_quantity }} {{ r.yield_unit.abbreviation }}</td>
             <td class="td-base text-center" style="color: var(--text-secondary);">{{ r.items.count }}</td>
             <td class="td-base text-center">
-                <a href="{% url 'lab_inventory:reagent_update' r.pk %}" style="color: var(--color-primary-600); font-size: var(--text-xs); margin-right: 0.5rem; text-decoration: none;">Editar</a>
-                <a href="{% url 'lab_inventory:reagent_delete' r.pk %}" style="color: var(--color-danger); font-size: var(--text-xs); text-decoration: none;">Eliminar</a>
+                <a href="{% url 'lab_inventory:reagent_update' r.pk %}" class="btn-table btn-table-edit">Editar</a>
+                <a href="{% url 'lab_inventory:reagent_delete' r.pk %}" class="btn-table btn-table-delete">Eliminar</a>
             </td>
         </tr>
         {% empty %}
