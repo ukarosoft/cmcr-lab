@@ -1,11 +1,11 @@
 <div class="card" style="max-width: 480px; margin: 0 auto; text-align: center;">
     <h3 style="font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">Confirmar eliminación</h3>
     <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: 1.5rem;">¿Estás seguro de eliminar "{{ object }}"?</p>
-    <form method="post">
+    <form method="post" x-data>
         {% csrf_token %}
         <div class="flex items-center justify-center gap-3">
             <button type="submit" class="btn-danger">Eliminar</button>
-            <button type="button" onclick="history.back()" class="btn-ghost">Cancelar</button>
+            <button type="button" @click="history.back()" class="btn-ghost">Cancelar</button>
         </div>
     </form>
 </div>

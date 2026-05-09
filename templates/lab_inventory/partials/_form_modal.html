@@ -14,9 +14,9 @@
         </div>
         {% endfor %}
 
-        <div class="flex items-center gap-3" style="margin-top: 1rem;">
+        <div class="flex items-center gap-3" style="margin-top: 1rem;" x-data>
             <button type="submit" class="btn-primary">Guardar</button>
-            <button type="button" onclick="history.back()" class="btn-ghost">Cancelar</button>
+            <button type="button" @click="history.back()" class="btn-ghost">Cancelar</button>
         </div>
     </form>
 </div>
