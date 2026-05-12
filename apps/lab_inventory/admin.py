@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Category, UnitOfMeasure, Supplier, Supply,
-    Reagent, ReagentItem, ProductionOrder, StockMovement,
+    Reagent, ReagentItem, Batch, ProductionOrder, StockMovement,
 )
 
 
@@ -60,6 +60,14 @@ class ReagentAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_filter = ['organization', 'is_active']
     search_fields = ['name', 'code']
     inlines = [ReagentItemInline]
+
+
+@admin.register(Batch)
+class BatchAdmin(TenantAdminMixin, admin.ModelAdmin):
+    list_display = ['batch_number', 'item', 'expiration_date', 'supplier', 'created_at', 'organization']
+    list_filter = ['organization']
+    search_fields = ['batch_number']
+    readonly_fields = ['id', 'created_at']
 
 
 @admin.register(ProductionOrder)

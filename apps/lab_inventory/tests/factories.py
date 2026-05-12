@@ -17,6 +17,7 @@ from apps.lab_inventory.models import (
     Supply,
     Reagent,
     ReagentItem,
+    Batch,
     ProductionOrder,
     StockMovement,
 )
@@ -143,6 +144,20 @@ class ReagentItemFactory(DjangoModelFactory):
         UnitOfMeasureFactory,
         organization=factory.SelfAttribute('..organization'),
     )
+
+
+class BatchFactory(DjangoModelFactory):
+    class Meta:
+        model = Batch
+
+    organization = factory.SubFactory(OrganizationFactory)
+    supply = factory.SubFactory(
+        SupplyFactory,
+        organization=factory.SelfAttribute('..organization'),
+    )
+    reagent = None
+    batch_number = factory.Sequence(lambda n: f'LOT-{n:05d}')
+    expiration_date = None
 
 
 class ProductionOrderFactory(DjangoModelFactory):

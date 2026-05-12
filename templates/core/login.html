@@ -159,9 +159,14 @@
                 <div class="divider">o</div>
 
                 <p style="text-align: center; color: var(--text-muted); font-size: var(--text-xs); line-height: 1.6;">
-                    ¿Problemas para acceder?
+                    <a href="{% url 'core:password_reset' %}"
+                       style="color: var(--color-primary-400); text-decoration: none;">
+                        ¿Olvidaste tu contraseña?
+                    </a>
                     <br>
-                    Contacta al administrador del laboratorio.
+                    <span style="margin-top: 4px; display: inline-block;">
+                        ¿Problemas para acceder? Contacta al administrador del laboratorio.
+                    </span>
                 </p>
             </div>
         </div>

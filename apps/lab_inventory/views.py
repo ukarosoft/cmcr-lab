@@ -1,6 +1,8 @@
+import csv
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count, Q
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -11,12 +13,12 @@ from django.views.generic import (
 from apps.core.decorators import role_required, tenant_required
 from .models import (
     Category, UnitOfMeasure, Supplier, Supply,
-    Reagent, ReagentItem, ProductionOrder, StockMovement,
+    Reagent, ReagentItem, Batch, ProductionOrder, StockMovement,
 )
 from .forms import (
     CategoryForm, UnitOfMeasureForm, SupplierForm,
     SupplyForm, ReagentForm, ReagentItemForm,
-    ProductionOrderForm, StockMovementForm,
+    BatchForm, ProductionOrderForm, StockMovementForm,
 )
 
 
@@ -34,6 +36,14 @@ class AdminOrAboveMixin:
     @method_decorator(role_required('admin', 'manager'))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+
+
+class AuditUpdateMixin:
+    """Registra quién modificó el registro."""
+    def form_valid(self, form):
+        if hasattr(form.instance, 'updated_by'):
+            form.instance.updated_by = self.request.user
+        return super().form_valid(form)
 
 
 # ────────────── Dashboard ──────────────
@@ -63,12 +73,32 @@ def dashboard(request):
             s._current_stock = stock
             low_stock_items.append(s)
 
+    # Reagent stock alerts
+    reagent_low_stock = []
+    for r in reagents.select_related('yield_unit'):
+        if r.stock_status == 'low':
+            r._current_stock = r.current_stock
+            reagent_low_stock.append(r)
+
     pending_orders = orders.filter(status='planned').count()
     in_progress_orders = orders.filter(status='in_progress').count()
     completed_orders = orders.filter(status='completed').count()
     cancelled_orders = orders.filter(status='cancelled').count()
     recent_movements = (
-        StockMovement.objects.for_tenant(tenant).select_related('supply', 'created_by')[:10]
+        StockMovement.objects.for_tenant(tenant)
+        .select_related('supply', 'reagent', 'created_by')[:10]
+    )
+
+    # Lotes próximos a vencer (30 días)
+    from datetime import date, timedelta
+    expiring_batches = (
+        Batch.objects.for_tenant(tenant)
+        .select_related('supply', 'reagent')
+        .filter(
+            expiration_date__gte=date.today(),
+            expiration_date__lte=date.today() + timedelta(days=30),
+        )
+        .order_by('expiration_date')[:10]
     )
 
     ctx = {
@@ -76,6 +106,8 @@ def dashboard(request):
         'total_reagents': total_reagents,
         'low_stock_count': len(low_stock_items),
         'low_stock_items': low_stock_items,
+        'reagent_low_stock': reagent_low_stock,
+        'expiring_batches': expiring_batches,
         'pending_orders': pending_orders,
         'in_progress_orders': in_progress_orders,
         'completed_orders': completed_orders,
@@ -112,7 +144,7 @@ class CategoryCreateView(AdminOrAboveMixin, CreateView):
         return super().form_valid(form)
 
 
-class CategoryUpdateView(AdminOrAboveMixin, UpdateView):
+class CategoryUpdateView(AuditUpdateMixin, AdminOrAboveMixin, UpdateView):
     model = Category
     form_class = CategoryForm
     template_name = 'lab_inventory/partials/_form_modal.html'
@@ -158,7 +190,7 @@ class UOMCreateView(AdminOrAboveMixin, CreateView):
         return super().form_valid(form)
 
 
-class UOMUpdateView(AdminOrAboveMixin, UpdateView):
+class UOMUpdateView(AuditUpdateMixin, AdminOrAboveMixin, UpdateView):
     model = UnitOfMeasure
     form_class = UnitOfMeasureForm
     template_name = 'lab_inventory/partials/_form_modal.html'
@@ -209,7 +241,7 @@ class SupplierCreateView(AdminOrAboveMixin, CreateView):
         return super().form_valid(form)
 
 
-class SupplierUpdateView(AdminOrAboveMixin, UpdateView):
+class SupplierUpdateView(AuditUpdateMixin, AdminOrAboveMixin, UpdateView):
     model = Supplier
     form_class = SupplierForm
     template_name = 'lab_inventory/supplier_form.html'
@@ -276,7 +308,7 @@ class SupplyCreateView(AdminOrAboveMixin, CreateView):
         return form
 
 
-class SupplyUpdateView(AdminOrAboveMixin, UpdateView):
+class SupplyUpdateView(AuditUpdateMixin, AdminOrAboveMixin, UpdateView):
     model = Supply
     form_class = SupplyForm
     template_name = 'lab_inventory/supply_form.html'
@@ -361,7 +393,7 @@ class ReagentCreateView(AdminOrAboveMixin, CreateView):
         return form
 
 
-class ReagentUpdateView(AdminOrAboveMixin, UpdateView):
+class ReagentUpdateView(AuditUpdateMixin, AdminOrAboveMixin, UpdateView):
     model = Reagent
     form_class = ReagentForm
     template_name = 'lab_inventory/reagent_form.html'
@@ -440,6 +472,58 @@ def reagent_item_delete(request, item_pk):
     return redirect('lab_inventory:reagent_detail', pk=reagent_pk)
 
 
+# ────────────── Lotes ──────────────
+
+class BatchListView(StaffOrAboveMixin, ListView):
+    model = Batch
+    template_name = 'lab_inventory/batch_list.html'
+    context_object_name = 'batches'
+
+    def get_queryset(self):
+        qs = (
+            Batch.objects.for_tenant(self.request.tenant)
+            .select_related('supply', 'reagent', 'supplier')
+        )
+        if q := self.request.GET.get('q'):
+            qs = qs.filter(
+                Q(batch_number__icontains=q) |
+                Q(supply__name__icontains=q) |
+                Q(reagent__name__icontains=q)
+            )
+        if self.request.GET.get('expired') == '1':
+            from datetime import date
+            qs = qs.filter(expiration_date__lt=date.today())
+        if self.request.GET.get('expiring') == '1':
+            from datetime import date, timedelta
+            qs = qs.filter(
+                expiration_date__gte=date.today(),
+                expiration_date__lte=date.today() + timedelta(days=30),
+            )
+        return qs
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return ['lab_inventory/partials/_batch_table.html']
+        return [self.template_name]
+
+
+class BatchCreateView(AdminOrAboveMixin, CreateView):
+    model = Batch
+    form_class = BatchForm
+    template_name = 'lab_inventory/batch_form.html'
+    success_url = reverse_lazy('lab_inventory:batch_list')
+
+    def form_valid(self, form):
+        form.instance.organization = self.request.tenant
+        return super().form_valid(form)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['supply'].queryset = Supply.objects.for_tenant(self.request.tenant)
+        form.fields['supplier'].queryset = Supplier.objects.for_tenant(self.request.tenant).filter(is_active=True)
+        return form
+
+
 # ────────────── Movimientos de stock ──────────────
 
 class StockMovementListView(StaffOrAboveMixin, ListView):
@@ -483,7 +567,8 @@ class StockMovementCreateView(AdminOrAboveMixin, CreateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.fields['supply'].queryset = Supply.objects.for_tenant(self.request.tenant)
-        form.fields['supplier'].queryset = Supplier.objects.for_tenant(self.request.tenant)
+        form.fields['supplier'].queryset = Supplier.objects.for_tenant(self.request.tenant).filter(is_active=True)
+        form.fields['production_order'].queryset = ProductionOrder.objects.for_tenant(self.request.tenant)
         return form
 
 
@@ -622,6 +707,7 @@ def production_order_start(request, pk):
 
     order.status = 'in_progress'
     order.started_at = timezone.now()
+    order.updated_by = request.user
     order.save()
 
     return redirect('lab_inventory:order_detail', pk=order.pk)
@@ -630,13 +716,33 @@ def production_order_start(request, pk):
 @login_required
 @role_required('admin', 'manager')
 def production_order_complete(request, pk):
-    """Completa la orden de producción."""
+    """Completa la orden de producción y registra entrada del reactivo producido."""
     order = get_object_or_404(
-        ProductionOrder.objects.for_tenant(request.tenant), pk=pk
+        ProductionOrder.objects.for_tenant(request.tenant).select_related('reagent'),
+        pk=pk,
     )
     if order.status == 'in_progress':
+        # Crear lote del reactivo producido
+        batch = Batch.objects.create(
+            organization=request.tenant,
+            reagent=order.reagent,
+            batch_number=order.batch_number,
+        )
+        # Registrar entrada de stock del reactivo
+        StockMovement.objects.create(
+            organization=request.tenant,
+            reagent=order.reagent,
+            movement_type='entry',
+            quantity=order.quantity,
+            batch=batch,
+            batch_number=order.batch_number,
+            production_order=order,
+            reason=f'Producción completada OP {order.batch_number}',
+            created_by=request.user,
+        )
         order.status = 'completed'
         order.completed_at = timezone.now()
+        order.updated_by = request.user
         order.save()
     return redirect('lab_inventory:order_detail', pk=order.pk)
 
@@ -667,5 +773,82 @@ def production_order_cancel(request, pk):
                 )
         order.status = 'cancelled'
         order.completed_at = timezone.now()
+        order.updated_by = request.user
         order.save()
     return redirect('lab_inventory:order_detail', pk=order.pk)
+
+
+# ────────────── Exportaciones CSV ──────────────
+
+@login_required
+@role_required('admin', 'manager')
+def export_supplies_csv(request):
+    """Exporta insumos con stock actual a CSV."""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="insumos.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Código', 'Nombre', 'Categoría', 'Unidad', 'Stock actual', 'Stock mín', 'Stock máx', 'Estado', 'Activo'])
+    for s in Supply.objects.for_tenant(request.tenant).select_related('category', 'unit'):
+        writer.writerow([
+            s.code, s.name, s.category.name, s.unit.abbreviation,
+            s.current_stock, s.stock_min, s.stock_max,
+            s.stock_status, 'Sí' if s.is_active else 'No',
+        ])
+    return response
+
+
+@login_required
+@role_required('admin', 'manager')
+def export_movements_csv(request):
+    """Exporta movimientos de stock a CSV."""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="movimientos.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Fecha', 'Insumo/Reactivo', 'Tipo', 'Cantidad', 'Lote', 'Proveedor', 'Motivo', 'Registrado por'])
+    for m in StockMovement.objects.for_tenant(request.tenant).select_related('supply', 'reagent', 'supplier', 'created_by').order_by('-created_at'):
+        item_name = m.supply.name if m.supply else (m.reagent.name if m.reagent else '')
+        writer.writerow([
+            m.created_at.strftime('%Y-%m-%d %H:%M'),
+            item_name, m.get_movement_type_display(), m.quantity,
+            m.batch_number, m.supplier.name if m.supplier else '',
+            m.reason, str(m.created_by) if m.created_by else '',
+        ])
+    return response
+
+
+@login_required
+@role_required('admin', 'manager')
+def export_orders_csv(request):
+    """Exporta órdenes de producción a CSV."""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="ordenes.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Lote', 'Reactivo', 'Cantidad', 'Estado', 'Creado por', 'Creado', 'Iniciado', 'Completado'])
+    for o in ProductionOrder.objects.for_tenant(request.tenant).select_related('reagent', 'created_by').order_by('-created_at'):
+        writer.writerow([
+            o.batch_number, o.reagent.name, o.quantity,
+            o.get_status_display(), str(o.created_by) if o.created_by else '',
+            o.created_at.strftime('%Y-%m-%d %H:%M'),
+            o.started_at.strftime('%Y-%m-%d %H:%M') if o.started_at else '',
+            o.completed_at.strftime('%Y-%m-%d %H:%M') if o.completed_at else '',
+        ])
+    return response
+
+
+@login_required
+@role_required('admin', 'manager')
+def export_batches_csv(request):
+    """Exporta lotes a CSV."""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="lotes.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Lote', 'Tipo', 'Insumo/Reactivo', 'Vencimiento', 'Proveedor', 'Stock lote', 'Notas'])
+    for b in Batch.objects.for_tenant(request.tenant).select_related('supply', 'reagent', 'supplier').order_by('-created_at'):
+        writer.writerow([
+            b.batch_number, 'Insumo' if b.supply else 'Reactivo',
+            b.item.name if b.item else '',
+            b.expiration_date.strftime('%Y-%m-%d') if b.expiration_date else '',
+            b.supplier.name if b.supplier else '',
+            b.current_stock, b.notes,
+        ])
+    return response

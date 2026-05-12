@@ -41,6 +41,10 @@ urlpatterns = [
     path('reagents/<uuid:reagent_pk>/items/add/', views.reagent_item_add, name='reagent_item_add'),
     path('reagents/items/<uuid:item_pk>/delete/', views.reagent_item_delete, name='reagent_item_delete'),
 
+    # Lotes
+    path('batches/', views.BatchListView.as_view(), name='batch_list'),
+    path('batches/new/', views.BatchCreateView.as_view(), name='batch_create'),
+
     # Movimientos de stock
     path('movements/', views.StockMovementListView.as_view(), name='movement_list'),
     path('movements/new/', views.StockMovementCreateView.as_view(), name='movement_create'),
@@ -52,4 +56,10 @@ urlpatterns = [
     path('orders/<uuid:pk>/start/', views.production_order_start, name='order_start'),
     path('orders/<uuid:pk>/complete/', views.production_order_complete, name='order_complete'),
     path('orders/<uuid:pk>/cancel/', views.production_order_cancel, name='order_cancel'),
+
+    # Exportaciones CSV
+    path('exports/supplies.csv', views.export_supplies_csv, name='export_supplies'),
+    path('exports/movements.csv', views.export_movements_csv, name='export_movements'),
+    path('exports/orders.csv', views.export_orders_csv, name='export_orders'),
+    path('exports/batches.csv', views.export_batches_csv, name='export_batches'),
 ]

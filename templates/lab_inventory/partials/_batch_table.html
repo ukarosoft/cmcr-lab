@@ -1,0 +1,66 @@
+<table class="table-pro">
+    <thead>
+        <tr>
+            <th scope="col">Lote</th>
+            <th scope="col">Insumo / Reactivo</th>
+            <th scope="col">Proveedor</th>
+            <th scope="col">Vencimiento</th>
+            <th scope="col">Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in batches %}
+        <tr>
+            <td><span class="code-pill">{{ b.batch_number }}</span></td>
+            <td>
+                <span style="font-weight: 600; color: var(--text-primary);">{{ b.item.name }}</span>
+                <span style="font-size: var(--text-xs); color: var(--text-tertiary); margin-left: var(--space-1);">
+                    {% if b.supply %}Insumo{% else %}Reactivo{% endif %}
+                </span>
+            </td>
+            <td style="color: var(--text-secondary);">{{ b.supplier.name|default:'—' }}</td>
+            <td>
+                {% if b.expiration_date %}
+                    <span style="color: {% if b.is_expired %}var(--color-error){% elif b.days_until_expiry <= 30 %}var(--color-warning){% else %}var(--text-secondary){% endif %};">
+                        {{ b.expiration_date|date:"d/m/Y" }}
+                        {% if b.is_expired %}
+                            <span style="font-size: var(--text-xs);">(vencido)</span>
+                        {% elif b.days_until_expiry <= 30 %}
+                            <span style="font-size: var(--text-xs);">({{ b.days_until_expiry }}d)</span>
+                        {% endif %}
+                    </span>
+                {% else %}
+                    <span style="color: var(--text-tertiary);">—</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if b.is_expired %}
+                    <span class="status-pill status-pill--error">Vencido</span>
+                {% elif b.days_until_expiry is not None and b.days_until_expiry <= 30 %}
+                    <span class="status-pill status-pill--warning">Por vencer</span>
+                {% else %}
+                    <span class="status-pill status-pill--success">Vigente</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">
+                <div class="empty-state">
+                    <div class="empty-state__illustration">
+                        <svg class="icon-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                    </div>
+                    <h3 class="empty-state__title">Sin lotes registrados</h3>
+                    <p class="empty-state__hint">Registra lotes para controlar trazabilidad y vencimientos.</p>
+                    <a href="{% url 'lab_inventory:batch_create' %}" class="btn-primary">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Registrar primer lote
+                    </a>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

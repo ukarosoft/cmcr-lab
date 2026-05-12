@@ -1,7 +1,9 @@
 import uuid
+from datetime import date
 from decimal import Decimal
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.utils import timezone
 from apps.core.models import TenantModel, TenantSoftDeleteModel
 
 
@@ -12,6 +14,10 @@ class Category(TenantModel):
     description = models.TextField('descripción', blank=True)
     created_at = models.DateTimeField('creado', auto_now_add=True)
     updated_at = models.DateTimeField('actualizado', auto_now=True)
+    updated_by = models.ForeignKey(
+        'core.User', on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='modificado por', related_name='+',
+    )
 
     class Meta:
         ordering = ['name']
@@ -64,6 +70,10 @@ class Supplier(TenantModel):
     is_active = models.BooleanField('activo', default=True)
     created_at = models.DateTimeField('creado', auto_now_add=True)
     updated_at = models.DateTimeField('actualizado', auto_now=True)
+    updated_by = models.ForeignKey(
+        'core.User', on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='modificado por', related_name='+',
+    )
 
     class Meta:
         ordering = ['name']
@@ -107,6 +117,10 @@ class Supply(TenantSoftDeleteModel):
     is_active = models.BooleanField('activo', default=True)
     created_at = models.DateTimeField('creado', auto_now_add=True)
     updated_at = models.DateTimeField('actualizado', auto_now=True)
+    updated_by = models.ForeignKey(
+        'core.User', on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='modificado por', related_name='+',
+    )
 
     class Meta:
         ordering = ['name']
@@ -167,9 +181,19 @@ class Reagent(TenantSoftDeleteModel):
         related_name='reagents',
     )
     tracks_batch = models.BooleanField('control por lote', default=True)
+    stock_min = models.DecimalField(
+        'stock mínimo', max_digits=12, decimal_places=4, default=0
+    )
+    stock_max = models.DecimalField(
+        'stock máximo', max_digits=12, decimal_places=4, default=0
+    )
     is_active = models.BooleanField('activo', default=True)
     created_at = models.DateTimeField('creado', auto_now_add=True)
     updated_at = models.DateTimeField('actualizado', auto_now=True)
+    updated_by = models.ForeignKey(
+        'core.User', on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='modificado por', related_name='+',
+    )
 
     class Meta:
         ordering = ['name']
@@ -181,6 +205,107 @@ class Reagent(TenantSoftDeleteModel):
         if self.code:
             return f'{self.code} — {self.name}'
         return self.name
+
+    @property
+    def current_stock(self):
+        """Calcula el stock actual sumando movimientos de reactivo."""
+        from django.db.models import Sum
+        result = self.movements.for_tenant(self.organization).aggregate(
+            total=Sum('quantity')
+        )
+        return result['total'] or Decimal('0')
+
+    @property
+    def stock_status(self):
+        """Retorna 'low', 'ok', 'high' según el nivel de stock."""
+        stock = self.current_stock
+        if stock <= self.stock_min:
+            return 'low'
+        if self.stock_max > 0 and stock >= self.stock_max:
+            return 'high'
+        return 'ok'
+
+
+class Batch(TenantModel):
+    """Lote de insumo o reactivo con trazabilidad y fecha de vencimiento."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    supply = models.ForeignKey(
+        Supply,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name='insumo',
+        related_name='batches',
+    )
+    reagent = models.ForeignKey(
+        Reagent,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name='reactivo',
+        related_name='batches',
+    )
+    batch_number = models.CharField('número de lote', max_length=80)
+    expiration_date = models.DateField('fecha de vencimiento', null=True, blank=True)
+    supplier = models.ForeignKey(
+        Supplier,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='proveedor',
+    )
+    notes = models.TextField('notas', blank=True)
+    created_at = models.DateTimeField('creado', auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Lote'
+        verbose_name_plural = 'Lotes'
+        indexes = [
+            models.Index(fields=['organization', 'batch_number']),
+            models.Index(fields=['organization', 'expiration_date']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(supply__isnull=False, reagent__isnull=True) |
+                    models.Q(supply__isnull=True, reagent__isnull=False)
+                ),
+                name='batch_supply_xor_reagent',
+            ),
+        ]
+
+    def __str__(self):
+        item = self.supply or self.reagent
+        return f'Lote {self.batch_number} — {item.name if item else "?"}'
+
+    @property
+    def item(self):
+        """Retorna el insumo o reactivo asociado."""
+        return self.supply or self.reagent
+
+    @property
+    def current_stock(self):
+        """Stock actual de este lote."""
+        from django.db.models import Sum
+        result = self.movements.for_tenant(self.organization).aggregate(
+            total=Sum('quantity')
+        )
+        return result['total'] or Decimal('0')
+
+    @property
+    def is_expired(self):
+        """True si el lote ya venció."""
+        if not self.expiration_date:
+            return False
+        return self.expiration_date < date.today()
+
+    @property
+    def days_until_expiry(self):
+        """Días hasta el vencimiento. Negativo si ya venció. None si no tiene fecha."""
+        if not self.expiration_date:
+            return None
+        return (self.expiration_date - date.today()).days
 
 
 class ReagentItem(TenantModel):
@@ -261,6 +386,10 @@ class ProductionOrder(TenantModel):
     started_at = models.DateTimeField('iniciado', null=True, blank=True)
     completed_at = models.DateTimeField('completado', null=True, blank=True)
     updated_at = models.DateTimeField('actualizado', auto_now=True)
+    updated_by = models.ForeignKey(
+        'core.User', on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='modificado por', related_name='+',
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -288,7 +417,17 @@ class StockMovement(TenantModel):
     supply = models.ForeignKey(
         Supply,
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         verbose_name='insumo',
+        related_name='movements',
+    )
+    reagent = models.ForeignKey(
+        Reagent,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name='reactivo',
         related_name='movements',
     )
     movement_type = models.CharField(
@@ -298,6 +437,14 @@ class StockMovement(TenantModel):
         'cantidad', max_digits=12, decimal_places=4,
     )
     batch_number = models.CharField('número de lote', max_length=80, blank=True)
+    batch = models.ForeignKey(
+        Batch,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='lote',
+        related_name='movements',
+    )
     supplier = models.ForeignKey(
         Supplier,
         on_delete=models.SET_NULL,
@@ -334,6 +481,15 @@ class StockMovement(TenantModel):
             models.Index(fields=['organization', 'movement_type']),
             models.Index(fields=['organization', '-created_at']),
         ]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(supply__isnull=False, reagent__isnull=True) |
+                    models.Q(supply__isnull=True, reagent__isnull=False)
+                ),
+                name='movement_supply_xor_reagent',
+            ),
+        ]
 
     def save(self, *args, **kwargs):
         if self.movement_type == 'exit':
@@ -342,6 +498,18 @@ class StockMovement(TenantModel):
             self.quantity = abs(self.quantity)
         super().save(*args, **kwargs)
 
+    @property
+    def item(self):
+        """Retorna el insumo o reactivo asociado."""
+        return self.supply or self.reagent
+
     def __str__(self):
         tipo = self.get_movement_type_display()
-        return f'{tipo} de {self.quantity} {self.supply.unit.abbreviation} — {self.supply.name}'
+        item = self.supply or self.reagent
+        if self.supply:
+            unit_abbr = self.supply.unit.abbreviation
+        elif self.reagent:
+            unit_abbr = self.reagent.yield_unit.abbreviation
+        else:
+            unit_abbr = '?'
+        return f'{tipo} de {self.quantity} {unit_abbr} — {item.name if item else "?"}'

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Lote — CMCR Lab{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include 'components/_sidebar.html' %}
+
+    <div class="flex-1 p-6 lg:p-8">
+        <a href="{% url 'lab_inventory:batch_list' %}" style="color: var(--color-primary-600); font-size: var(--text-sm); text-decoration: none; display: inline-block; margin-bottom: 1rem;">← Volver a lotes</a>
+        <h1 class="text-title" style="margin-bottom: 1.5rem;">Nuevo lote</h1>
+
+        <div class="card" style="max-width: 640px;">
+            <form method="post">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% for field in form %}
+                    <div style="{% if field.name == 'notes' %}grid-column: 1 / -1;{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="label-base">{{ field.label }}{% if field.field.required %} <span style="color: var(--color-danger);">*</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<p style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px;">{{ field.help_text }}</p>{% endif %}
+                        {% if field.errors %}<p class="form-error" role="alert">{{ field.errors|join:', ' }}</p>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="flex items-center gap-3" style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary">Guardar</button>
+                    <a href="{% url 'lab_inventory:batch_list' %}" class="btn-ghost">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

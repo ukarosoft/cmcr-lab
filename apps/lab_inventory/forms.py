@@ -1,7 +1,7 @@
 from django import forms
 from .models import (
     Category, UnitOfMeasure, Supplier, Supply,
-    Reagent, ReagentItem, ProductionOrder, StockMovement,
+    Reagent, ReagentItem, Batch, ProductionOrder, StockMovement,
 )
 
 
@@ -51,7 +51,8 @@ class ReagentForm(BaseForm):
         model = Reagent
         fields = [
             'code', 'name', 'description', 'preparation_instructions',
-            'yield_quantity', 'yield_unit', 'tracks_batch', 'is_active',
+            'yield_quantity', 'yield_unit', 'stock_min', 'stock_max',
+            'tracks_batch', 'is_active',
         ]
 
 
@@ -79,12 +80,31 @@ class ProductionOrderForm(BaseForm):
             self.fields['reagent'].queryset = Reagent.objects.for_tenant(self.tenant)
 
 
+class BatchForm(BaseForm):
+    class Meta:
+        model = Batch
+        fields = [
+            'supply', 'batch_number', 'expiration_date',
+            'supplier', 'notes',
+        ]
+        widgets = {
+            'expiration_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.tenant = kwargs.pop('tenant', None)
+        super().__init__(*args, **kwargs)
+        if self.tenant:
+            self.fields['supply'].queryset = Supply.objects.for_tenant(self.tenant)
+            self.fields['supplier'].queryset = Supplier.objects.for_tenant(self.tenant).filter(is_active=True)
+
+
 class StockMovementForm(BaseForm):
     class Meta:
         model = StockMovement
         fields = [
             'supply', 'movement_type', 'quantity',
-            'batch_number', 'supplier', 'reason',
+            'batch_number', 'supplier', 'production_order', 'reason',
         ]
 
     def __init__(self, *args, **kwargs):
@@ -92,4 +112,20 @@ class StockMovementForm(BaseForm):
         super().__init__(*args, **kwargs)
         if self.tenant:
             self.fields['supply'].queryset = Supply.objects.for_tenant(self.tenant)
-            self.fields['supplier'].queryset = Supplier.objects.for_tenant(self.tenant)
+            self.fields['supplier'].queryset = Supplier.objects.for_tenant(self.tenant).filter(is_active=True)
+            self.fields['production_order'].queryset = ProductionOrder.objects.for_tenant(self.tenant)
+
+    def clean(self):
+        cleaned = super().clean()
+        movement_type = cleaned.get('movement_type')
+        supply = cleaned.get('supply')
+        quantity = cleaned.get('quantity')
+        if movement_type == 'exit' and supply and quantity:
+            current = supply.current_stock
+            if current < abs(quantity):
+                raise forms.ValidationError(
+                    f'Stock insuficiente de {supply.name}: '
+                    f'disponible {current} {supply.unit.abbreviation}, '
+                    f'solicitado {abs(quantity)} {supply.unit.abbreviation}'
+                )
+        return cleaned
