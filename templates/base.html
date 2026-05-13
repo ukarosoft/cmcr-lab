@@ -17,6 +17,9 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/ukaro.css' %}">
 
+    <!-- Alpine.js: ocultar elementos con x-cloak hasta que Alpine inicialice -->
+    <style>[x-cloak] { display: none !important; }</style>
+
     <!-- Anti-FOUC dark mode: aplicar tema antes del primer paint -->
     <script>
         (function () {

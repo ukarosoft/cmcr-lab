@@ -65,7 +65,7 @@
                     aria-label="Menú de usuario">
                 {{ request.user.get_full_name|default:request.user.username|first|upper }}
             </button>
-            <div x-show="menuOpen" x-transition.opacity
+            <div x-show="menuOpen" x-cloak x-transition.opacity
                  role="menu"
                  style="position: absolute; right: 0; top: calc(100% + .5rem); min-width: 220px;
                         background: var(--surface-card); color: var(--text-primary);
