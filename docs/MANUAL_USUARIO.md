@@ -1,673 +1,497 @@
-# CMCR Lab — Manual de Usuario y Documentación Funcional
+# CMCR Lab — Manual de Usuario
 
-**Sistema de Gestión de Inventario y Producción de Reactivos**
-**Cliente:** CMCR (Centro Médico de Consultas y Rehabilitación)
-**Partner:** SmartSolutions
-**Versión:** 1.0 — Mayo 2026
+**Sistema de Gestion de Inventario y Produccion de Reactivos**
+**Centro Clinico Madre Carmen Rendiles**
+**Version:** 2.0 — Mayo 2026
 
 ---
 
 ## Tabla de contenido
 
-1. [Descripcion general del sistema](#1-descripcion-general-del-sistema)
-2. [Roles y permisos](#2-roles-y-permisos)
-3. [Modulos del sistema](#3-modulos-del-sistema)
-4. [Flujos de proceso](#4-flujos-de-proceso)
-5. [Casos de uso](#5-casos-de-uso)
-6. [Guia operativa por pantalla](#6-guia-operativa-por-pantalla)
-7. [Auditoria interna — analisis de logica y factibilidad](#7-auditoria-interna)
+1. [Introduccion](#1-introduccion)
+2. [Acceso al sistema](#2-acceso-al-sistema)
+3. [Pantalla principal (Dashboard)](#3-pantalla-principal-dashboard)
+4. [Roles de usuario](#4-roles-de-usuario)
+5. [Configuracion inicial](#5-configuracion-inicial)
+6. [Gestion de insumos](#6-gestion-de-insumos)
+7. [Gestion de reactivos y recetas](#7-gestion-de-reactivos-y-recetas)
+8. [Movimientos de inventario](#8-movimientos-de-inventario)
+9. [Lotes y vencimientos](#9-lotes-y-vencimientos)
+10. [Ordenes de produccion](#10-ordenes-de-produccion)
+11. [Notificaciones](#11-notificaciones)
+12. [Exportacion de datos](#12-exportacion-de-datos)
+13. [Recuperacion de contrasena](#13-recuperacion-de-contrasena)
+14. [Preguntas frecuentes](#14-preguntas-frecuentes)
 
 ---
 
-## 1. Descripcion general del sistema
+## 1. Introduccion
 
-CMCR Lab es un sistema web para gestionar el inventario de insumos quimicos y la produccion de reactivos en un laboratorio clinico. Permite:
+CMCR Lab es el sistema del laboratorio para llevar el control de todo lo que se compra, se almacena, se usa y se produce. Permite:
 
-- Registrar y clasificar insumos (materias primas)
-- Definir recetas de reactivos (que insumos se necesitan para preparar cada reactivo)
-- Controlar el stock con movimientos de entrada, salida y ajuste
-- Crear ordenes de produccion que consumen insumos automaticamente
-- Alertar cuando un insumo esta por debajo de su stock minimo
-- Gestionar multiples organizaciones (multi-tenant) con aislamiento total de datos
+- Saber en todo momento cuanto hay de cada insumo y reactivo
+- Registrar cada entrada y salida del almacen
+- Definir las recetas de los reactivos que se preparan internamente
+- Crear ordenes de produccion que descuentan los insumos automaticamente
+- Recibir alertas cuando algo esta por acabarse o proximo a vencer
+- Exportar datos a Excel/CSV para reportes
+- Controlar lotes y fechas de vencimiento
 
-### Arquitectura funcional
-
-```
-Proveedores → [Entrada de insumos] → Inventario de Insumos
-                                          ↓
-                                     Recetas de Reactivos
-                                          ↓
-                               Orden de Produccion (planificada)
-                                          ↓
-                               Iniciar produccion (consume stock)
-                                          ↓
-                               Completar produccion (reactivo listo)
-```
-
-### Acceso al sistema
-
-- **URL:** https://cmcr-lab.onrender.com
-- **Requisito:** Cuenta de usuario activa con organizacion asignada
-- **Navegadores:** Chrome, Firefox, Safari, Edge (ultimas 2 versiones)
-- **Dispositivos:** Desktop y movil (responsive)
+El sistema funciona desde cualquier computador o celular con navegador web. No requiere instalar nada.
 
 ---
 
-## 2. Roles y permisos
+## 2. Acceso al sistema
 
-El sistema tiene 4 roles jerarquicos. Cada rol hereda los permisos de los inferiores.
+### Iniciar sesion
 
-| Rol | Codigo | Puede ver | Puede crear/editar/eliminar | Puede gestionar produccion | Acceso admin Django |
-|-----|--------|-----------|----------------------------|---------------------------|---------------------|
-| **Super Admin** | `superadmin` | Todo (todas las organizaciones) | Si | Si | Si |
-| **Administrador** | `admin` | Datos de su organizacion | Si | Si | Si (solo su org) |
-| **Gerente** | `manager` | Datos de su organizacion | Si | Si | No |
-| **Empleado** | `staff` | Datos de su organizacion | No (solo lectura) | No | No |
+1. Abra el navegador y vaya a la direccion del sistema
+2. Ingrese su **usuario** y **contrasena**
+3. Presione **"Ingresar al sistema"**
 
-### Detalle por rol
+El sistema lo llevara directamente al panel principal (Dashboard).
 
-**Super Admin:**
-- Puede existir sin organizacion asignada (unico rol que puede)
-- Ve datos de todas las organizaciones si tiene una asignada
-- Acceso total al panel admin de Django
-- Uso: personal tecnico de SmartSolutions/Ukarasoft
+### Cerrar sesion
 
-**Administrador:**
-- Gestiona todos los datos de su organizacion
-- Puede crear/editar/eliminar cualquier registro
-- Puede iniciar, completar y cancelar ordenes de produccion
-- Acceso al admin de Django filtrado a su organizacion
-- Uso: director del laboratorio o jefe de area
+Haga clic en su nombre de usuario en la esquina superior derecha y seleccione **"Cerrar sesion"**.
 
-**Gerente:**
-- Mismas capacidades que admin en la aplicacion web
-- Sin acceso al admin de Django
-- Uso: supervisor de laboratorio, jefe de turno
+### Olvide mi contrasena
 
-**Empleado (Staff):**
-- Solo lectura en todas las pantallas
-- Puede ver dashboard, listas, detalles
-- No puede crear, editar ni eliminar nada
-- No puede gestionar ordenes de produccion
-- Uso: tecnicos de laboratorio, personal auxiliar
+1. En la pantalla de inicio de sesion, haga clic en **"¿Olvidaste tu contrasena?"**
+2. Ingrese su correo electronico registrado
+3. Revise su bandeja de entrada (y la carpeta de spam) — recibira un enlace
+4. Haga clic en el enlace y escriba su nueva contrasena dos veces
+5. Listo. Ya puede iniciar sesion con la nueva contrasena
 
-### Reglas de seguridad
-
-1. Todo usuario (excepto superadmin) DEBE tener una organizacion asignada
-2. Un usuario solo ve datos de su propia organizacion (aislamiento multi-tenant)
-3. Si la organizacion esta desactivada, el usuario ve una pantalla de "cuenta suspendida"
-4. Los formularios de seleccion (dropdowns) solo muestran opciones de la organizacion del usuario
+El enlace expira despues de una hora. Si no le llega el correo, contacte al administrador.
 
 ---
 
-## 3. Modulos del sistema
+## 3. Pantalla principal (Dashboard)
 
-### 3.1 Datos maestros
+Al iniciar sesion, vera un resumen de la situacion actual del laboratorio:
 
-Son los catalogos base que alimentan al resto del sistema. Deben configurarse ANTES de operar.
+### Indicadores principales (KPIs)
 
-#### 3.1.1 Categorias
+- **Total de insumos** — cuantos insumos diferentes tiene registrados
+- **Total de reactivos** — cuantos reactivos tiene definidos
+- **Stock bajo** — cuantos insumos o reactivos estan por debajo de su nivel minimo
+- **Ordenes pendientes** — cuantas ordenes de produccion estan planificadas esperando ser iniciadas
+- **En produccion** — cuantas ordenes estan en proceso actualmente
 
-Clasifican los insumos por tipo (ejemplo: "Reactivo base", "Solvente", "Buffer", "Acido", "Indicador").
+### Secciones del Dashboard
 
-| Campo | Descripcion | Obligatorio |
-|-------|-------------|-------------|
-| Nombre | Nombre de la categoria | Si |
-| Descripcion | Detalle opcional | No |
+- **Pipeline de produccion** — muestra cuantas ordenes hay en cada estado (planificada, en proceso, completada, cancelada)
+- **Alertas de stock bajo** — lista de insumos y reactivos que necesitan reabastecimiento
+- **Lotes proximos a vencer** — lotes que venceran en los proximos 30 dias
+- **Movimientos recientes** — los ultimos 10 movimientos de inventario registrados
 
-- No se puede eliminar una categoria que tenga insumos asociados (proteccion referencial)
-- El nombre es unico por organizacion
+---
 
-#### 3.1.2 Unidades de medida
+## 4. Roles de usuario
 
-Definen como se mide cada insumo y reactivo (ejemplo: "Litro (L)", "Mililitro (mL)", "Kilogramo (kg)", "Gramo (g)", "Unidad (uds)").
+El sistema tiene tres niveles de acceso:
 
-| Campo | Descripcion | Obligatorio |
-|-------|-------------|-------------|
-| Nombre | Nombre completo | Si |
-| Abreviatura | Forma corta | Si |
+| Rol | Que puede hacer | Quien lo usa |
+|-----|----------------|--------------|
+| **Administrador** | Todo: crear, editar, eliminar, producir, exportar | Director del laboratorio, jefe de area |
+| **Gerente** | Lo mismo que el administrador | Supervisor, jefe de turno |
+| **Empleado** | Solo puede ver informacion (consultas) | Tecnicos, personal auxiliar |
 
-- La abreviatura es unica por organizacion
-- No se puede eliminar una unidad en uso
+**Importante:** Si usted tiene rol de Empleado y necesita registrar algo, solicite a su supervisor o administrador que lo haga, o que le asigne un rol con permisos de escritura.
 
-#### 3.1.3 Proveedores
+---
 
-Empresas o personas que suministran insumos al laboratorio.
+## 5. Configuracion inicial
 
-| Campo | Descripcion | Obligatorio |
-|-------|-------------|-------------|
-| Nombre | Razon social o nombre comercial | Si |
-| RIF | Registro fiscal | No |
-| Persona de contacto | Nombre del contacto | No |
-| Telefono | Numero de contacto | No |
-| Email | Correo electronico | No |
-| Direccion | Direccion fisica | No |
-| Activo | Si el proveedor esta vigente | Si (default: Si) |
+Antes de empezar a usar el sistema, el administrador debe crear los datos base en este orden:
 
-- Los proveedores se buscan por nombre o RIF
-- Un proveedor inactivo no aparece en los dropdowns de nuevos movimientos
+### Paso 1: Categorias
 
-### 3.2 Inventario
+Vaya a **Inventario > Categorias** y cree las clasificaciones de sus insumos. Ejemplos:
 
-#### 3.2.1 Insumos (Supplies)
+- Colorantes y tinciones
+- Reactivos de quimica clinica
+- Medios de cultivo
+- Antisueros y serologicos
+- Soluciones y buffers
+- Material de control
+- Descartables
 
-Materias primas que se utilizan para preparar reactivos. Son el corazon del sistema de inventario.
+### Paso 2: Unidades de medida
 
-| Campo | Descripcion | Obligatorio |
-|-------|-------------|-------------|
-| Codigo | Codigo interno unico (ej: INS-001) | No |
-| Nombre | Nombre del insumo | Si |
-| Descripcion | Detalle tecnico | No |
-| Categoria | Tipo de insumo | Si |
-| Unidad de medida | Como se mide | Si |
-| Stock minimo | Alerta si el stock baja de este valor | No (default: 0) |
-| Stock maximo | Referencia de capacidad maxima | No (default: 0) |
-| Control por lote | Si requiere trazabilidad por lote | No (default: No) |
-| Activo | Si el insumo esta en uso | Si (default: Si) |
+Vaya a **Inventario > Unidades de medida** y registre las unidades que utiliza. Ejemplos:
 
-**Propiedades calculadas:**
-- **Stock actual:** se calcula sumando todos los movimientos (entradas - salidas + ajustes). NO es un campo que se edite manualmente.
-- **Estado del stock:** `bajo` (≤ stock minimo), `ok` (normal), `alto` (≥ stock maximo)
+| Nombre | Abreviatura |
+|--------|-------------|
+| Mililitro | mL |
+| Litro | L |
+| Gramo | g |
+| Kilogramo | kg |
+| Unidad | uds |
+| Prueba | test |
+| Frasco | fco |
 
-**Detalle del insumo:** muestra ficha completa + historial de los ultimos 50 movimientos.
+### Paso 3: Proveedores
 
-**Borrado logico:** al eliminar un insumo, se marca como eliminado pero no se borra de la base de datos. Los movimientos historicos se preservan.
+Vaya a **Inventario > Proveedores** y registre las casas comerciales y distribuidores. Campos disponibles:
 
-#### 3.2.2 Movimientos de stock
+- Nombre (obligatorio)
+- RIF
+- Persona de contacto
+- Telefono
+- Correo electronico
+- Direccion
+- Estado activo/inactivo
 
-Registran cada entrada, salida o ajuste de inventario. Son la base para calcular el stock actual.
+Un proveedor marcado como **inactivo** no aparecera en los formularios de registro de entradas.
 
-| Campo | Descripcion | Obligatorio |
-|-------|-------------|-------------|
-| Insumo | Que insumo se mueve | Si |
-| Tipo | Entrada, Salida o Ajuste | Si |
-| Cantidad | Cuanto se mueve (siempre positivo en el form) | Si |
-| Numero de lote | Lote del proveedor | No |
-| Proveedor | Quien suministra (solo entradas) | No |
-| Motivo | Razon del movimiento | No |
+### Paso 4: Insumos
 
-**Reglas de negocio:**
-- **Entrada:** suma al stock (ej: compra de reactivos, donacion)
-- **Salida:** resta del stock (ej: uso en preparacion, descarte). Se almacena como negativo internamente.
-- **Ajuste:** puede sumar o restar (ej: conteo fisico revela diferencia). Se almacena tal cual.
-- Cada movimiento registra automaticamente quien lo hizo y cuando
-- Los movimientos generados por ordenes de produccion se vinculan a la orden
-- Los movimientos NO se pueden editar ni eliminar (inmutables, por trazabilidad)
+Vaya a **Inventario > Insumos** y registre cada materia prima o reactivo que compra. Vea la seccion 6 para mas detalle.
 
-### 3.3 Reactivos
+### Paso 5: Stock inicial
 
-#### 3.3.1 Reactivos (productos finales)
+Registre la cantidad actual de cada insumo mediante movimientos de **Entrada**. Vea la seccion 8.
 
-Productos que el laboratorio prepara a partir de insumos. Ejemplo: "Solucion de NaOH 0.1M", "Buffer pH 7.0".
+### Paso 6: Reactivos y recetas
 
-| Campo | Descripcion | Obligatorio |
-|-------|-------------|-------------|
-| Codigo | Codigo interno (ej: REA-001) | No |
-| Nombre | Nombre del reactivo | Si |
-| Descripcion | Detalle tecnico | No |
-| Instrucciones de preparacion | Procedimiento paso a paso | No |
-| Cantidad producida (yield) | Cuanto se obtiene por receta base | Si (default: 1) |
-| Unidad de rendimiento | En que unidad se mide el resultado | Si |
-| Control por lote | Si requiere trazabilidad | Si (default: Si) |
-| Activo | Si esta en uso | Si (default: Si) |
+Si el laboratorio prepara reactivos internamente, defina cada reactivo y su receta. Vea la seccion 7.
 
-**Borrado logico:** mismo comportamiento que insumos.
+---
 
-#### 3.3.2 Items de receta (ReagentItem)
+## 6. Gestion de insumos
 
-Cada reactivo tiene una "receta" que define que insumos necesita y en que cantidad. Es una relacion muchos-a-muchos entre reactivo e insumo con cantidad.
+### ¿Que es un insumo?
 
-| Campo | Descripcion | Obligatorio |
-|-------|-------------|-------------|
-| Insumo | Que materia prima se necesita | Si |
-| Cantidad | Cuanto se necesita por receta base | Si |
-| Unidad | En que unidad se mide | Si |
-| Notas | Observaciones (ej: "agregar lentamente") | No |
+Un insumo es cualquier material que el laboratorio compra para su funcionamiento: reactivos comerciales, colorantes, medios de cultivo, soluciones preparadas, material de control, etc.
 
-- Un insumo solo puede aparecer una vez en la receta de un reactivo (restriccion unica)
-- La cantidad es proporcional al `yield_quantity` del reactivo
+### Crear un insumo
 
-**Ejemplo:**
-Reactivo "Solucion NaOH 0.1M" (rendimiento: 1 L)
-- NaOH solido: 4.0 g
-- Agua destilada: 1000 mL
+Vaya a **Inventario > Insumos > Nuevo** y complete:
 
-Si se produce una OP de 5 L, el sistema multiplica: NaOH 20g, Agua 5000 mL.
+| Campo | Descripcion | Ejemplo |
+|-------|-------------|---------|
+| Codigo | Identificador interno | INS-001 |
+| Nombre | Nombre del insumo | Colorante Wright |
+| Descripcion | Detalle tecnico | Colorante para frotis sanguineo, frasco 500 mL |
+| Categoria | Clasificacion | Colorantes y tinciones |
+| Unidad de medida | Como se mide | mL |
+| Stock minimo | Alerta si baja de este valor | 200 |
+| Stock maximo | Capacidad maxima de almacenamiento | 2000 |
+| Control por lote | Si necesita rastrear lotes | Si |
+| Activo | Si esta en uso actualmente | Si |
 
-### 3.4 Produccion
+### Entender el stock
 
-#### 3.4.1 Ordenes de produccion
+El stock de un insumo **no se escribe a mano**. El sistema lo calcula automaticamente sumando todas las entradas y restando todas las salidas. Esto garantiza que el numero siempre coincide con el historial de movimientos.
 
-Documentan el proceso de preparar un reactivo. Tienen un ciclo de vida con 4 estados.
+### Estados de stock
 
-| Campo | Descripcion | Obligatorio |
-|-------|-------------|-------------|
-| Reactivo | Que se va a producir | Si |
-| Numero de lote | Identificador del lote de produccion | Si |
-| Cantidad | Cuanto se va a producir | Si |
-| Observaciones | Notas del proceso | No |
+- **Bajo** (indicador rojo) — el stock actual esta por debajo del minimo. Necesita reabastecimiento.
+- **OK** (indicador verde) — el stock esta en un nivel normal.
+- **Alto** (indicador amarillo) — el stock supera el maximo definido.
 
-**Campos automaticos:**
-- Creado por (usuario)
-- Fecha de creacion
-- Fecha de inicio
-- Fecha de completado/cancelacion
-- Estado
+### Ver detalle de un insumo
 
-### 3.5 Notificaciones
+Haga clic en el nombre de un insumo para ver:
+- Su ficha completa con todos los datos
+- El historial de los ultimos 50 movimientos (entradas, salidas, ajustes)
 
-Alertas internas del sistema para cada usuario. Se muestran en la barra de navegacion.
+### Eliminar un insumo
+
+Al eliminar un insumo, este se oculta de las listas pero **no se pierde la informacion**. Los movimientos historicos se conservan. Si necesita reactivarlo, contacte al administrador.
+
+---
+
+## 7. Gestion de reactivos y recetas
+
+### ¿Que es un reactivo en este sistema?
+
+Un reactivo es un producto que el laboratorio **prepara internamente** a partir de insumos. Por ejemplo: una tincion de Gram preparada a partir de sus componentes individuales, o una solucion buffer preparada a partir de sales y agua destilada.
+
+### Crear un reactivo
+
+Vaya a **Reactivos > Nuevo** y complete:
+
+| Campo | Descripcion | Ejemplo |
+|-------|-------------|---------|
+| Codigo | Identificador interno | REA-001 |
+| Nombre | Nombre del reactivo | Solucion de Turk |
+| Descripcion | Para que se usa | Solucion para conteo de leucocitos |
+| Instrucciones de preparacion | Procedimiento paso a paso | Disolver 1 mL de acido acetico glacial... |
+| Cantidad producida | Cuanto se obtiene por preparacion | 100 |
+| Unidad de rendimiento | En que unidad | mL |
+| Stock minimo | Alerta si baja de este valor | 50 |
+| Stock maximo | Referencia de capacidad | 500 |
+
+### Definir la receta
+
+Despues de crear el reactivo, entre a su **detalle** y agregue los insumos necesarios:
+
+1. Haga clic en **"Agregar insumo a la receta"**
+2. Seleccione el insumo, la cantidad necesaria y la unidad
+3. Repita para cada insumo de la receta
+
+**Ejemplo:** Solucion de Turk (rinde 100 mL)
+- Acido acetico glacial: 1 mL
+- Violeta de genciana 1%: 1 mL
+- Agua destilada: 98 mL
+
+Cuando cree una orden de produccion por 500 mL, el sistema multiplicara automaticamente:
+- Acido acetico glacial: 5 mL
+- Violeta de genciana 1%: 5 mL
+- Agua destilada: 490 mL
+
+### Stock de reactivos
+
+Al igual que los insumos, los reactivos tienen stock que se calcula automaticamente. Cuando se completa una orden de produccion, el sistema registra la entrada del reactivo producido.
+
+---
+
+## 8. Movimientos de inventario
+
+### ¿Que es un movimiento?
+
+Un movimiento es el registro de que algo entro, salio o se ajusto en el inventario. Cada movimiento queda grabado permanentemente — no se puede editar ni borrar, para garantizar la trazabilidad.
+
+### Tipos de movimiento
+
+| Tipo | Cuando se usa | Efecto en stock |
+|------|---------------|-----------------|
+| **Entrada** | Llego mercancia del proveedor | Suma |
+| **Salida** | Se uso o descarto un insumo | Resta |
+| **Ajuste** | Conteo fisico no coincide con el sistema | Suma o resta |
+
+### Registrar un movimiento
+
+Vaya a **Movimientos > Nuevo** y complete:
 
 | Campo | Descripcion |
 |-------|-------------|
-| Usuario | A quien va dirigida |
-| Mensaje | Texto de la alerta |
-| Tipo | info, success, warning, error |
-| Leida | Si ya fue vista |
+| Insumo | Seleccione el insumo que se mueve |
+| Tipo | Entrada, Salida o Ajuste |
+| Cantidad | Cuanto (siempre en numero positivo) |
+| Numero de lote | Lote del proveedor (si aplica) |
+| Proveedor | Quien lo suministro (solo para entradas) |
+| Orden de produccion | Si el movimiento esta relacionado con una OP |
+| Motivo | Razon del movimiento (ej: "Compra mensual", "Descarte por vencimiento") |
 
-- Se pueden marcar como leidas individualmente o todas a la vez
-- Cada usuario solo ve sus propias notificaciones
-- Aisladas por organizacion
+### Proteccion contra stock negativo
 
-### 3.6 Dashboard
+El sistema **no permite** registrar una salida mayor al stock disponible. Si intenta sacar 500 mL de un insumo que solo tiene 200 mL, el formulario mostrara un error indicando el stock disponible.
 
-Pantalla principal tras el login. Muestra un resumen operativo:
+### Movimientos automaticos
 
-- **KPIs:** total de insumos, total de reactivos, insumos con stock bajo, ordenes pendientes
-- **Pipeline de produccion:** conteo por estado (planificada, en proceso, completada, cancelada)
-- **Alertas de stock bajo:** lista de insumos por debajo de su stock minimo
-- **Movimientos recientes:** ultimos 10 movimientos de inventario
+Cuando se inicia una orden de produccion, el sistema genera automaticamente las salidas de cada insumo. Estos movimientos automaticos quedan vinculados a la orden y no necesita registrarlos manualmente.
 
 ---
 
-## 4. Flujos de proceso
+## 9. Lotes y vencimientos
 
-### 4.1 Flujo de configuracion inicial (primera vez)
+### ¿Que es un lote?
 
-```
-1. Admin crea Categorias (tipos de insumos)
-         ↓
-2. Admin crea Unidades de medida (L, mL, kg, g, uds)
-         ↓
-3. Admin crea Proveedores
-         ↓
-4. Admin crea Insumos (materias primas)
-         ↓
-5. Admin registra stock inicial con Movimientos de Entrada
-         ↓
-6. Admin crea Reactivos y define sus Recetas
-         ↓
-7. Sistema listo para operar
-```
+Un lote agrupa una cantidad especifica de un insumo o reactivo que comparte el mismo origen (proveedor, fecha de fabricacion, numero de lote del fabricante). Controlar lotes permite:
 
-### 4.2 Flujo de entrada de insumos (compra/recepcion)
+- Saber cuanto queda de un lote especifico
+- Rastrear de donde vino un insumo si hay un problema
+- Controlar fechas de vencimiento por lote
 
-```
-Proveedor entrega insumos al laboratorio
-         ↓
-Admin/Gerente va a Movimientos > Nuevo
-         ↓
-Selecciona: Insumo, Tipo=Entrada, Cantidad, Proveedor, Lote
-         ↓
-Sistema registra el movimiento y actualiza el stock
-         ↓
-Dashboard refleja el nuevo stock
-```
+### Crear un lote
 
-### 4.3 Flujo de produccion de reactivos (FLUJO PRINCIPAL)
+Vaya a **Lotes > Nuevo** y complete:
 
-Este es el proceso central del sistema:
+| Campo | Descripcion | Ejemplo |
+|-------|-------------|---------|
+| Insumo | A que insumo pertenece | Colorante Wright |
+| Numero de lote | Codigo del fabricante/proveedor | LOT-2026-0847 |
+| Fecha de vencimiento | Cuando expira | 2027-03-15 |
+| Proveedor | Quien lo suministro | QuimicaLab C.A. |
+| Notas | Observaciones | Frasco de 500 mL, almacenar a temperatura ambiente |
 
-```
-                    ┌─────────────────┐
-                    │  1. PLANIFICAR   │
-                    │  Crear OP nueva  │
-                    │  Estado: planned │
-                    └────────┬────────┘
-                             │
-                    ┌────────▼────────┐
-                    │  2. VERIFICAR   │
-                    │  ¿Hay stock     │
-                    │  suficiente?    │
-                    └───┬─────────┬───┘
-                        │         │
-                    SI  │         │ NO
-                        │         │
-               ┌────────▼──┐  ┌──▼──────────────┐
-               │ 3. INICIAR │  │ Muestra errores  │
-               │ Consume    │  │ de stock por     │
-               │ insumos    │  │ cada item faltante│
-               │ automatico │  └──────────────────┘
-               │ Estado:    │
-               │ in_progress│
-               └─────┬──────┘
-                     │
-            ┌────────▼────────┐
-            │ 4a. COMPLETAR   │         ┌──────────────────┐
-            │ Reactivo listo  │    o    │ 4b. CANCELAR     │
-            │ Estado:         │         │ Revierte consumos │
-            │ completed       │         │ (entradas compen- │
-            └─────────────────┘         │ satorias)         │
-                                        │ Estado: cancelled │
-                                        └──────────────────┘
-```
+### Alertas de vencimiento
 
-**Detalle del paso 3 (Iniciar produccion):**
-- El sistema calcula cuanto de cada insumo necesita segun la receta y la cantidad a producir
-- Formula: `cantidad_necesaria = item.quantity * (orden.quantity / reactivo.yield_quantity)`
-- Crea automaticamente un movimiento de salida por cada insumo de la receta
-- Los movimientos quedan vinculados a la orden de produccion
-- Cambia el estado a `in_progress` y registra la fecha de inicio
+El Dashboard muestra automaticamente los lotes que venceran en los proximos 30 dias. Los lotes ya vencidos se resaltan para que tome accion inmediata (descarte, devolucion o evaluacion).
 
-**Detalle del paso 4b (Cancelar):**
-- Si la orden estaba `in_progress`, revierte los consumos creando movimientos de entrada compensatorios
-- Si estaba `planned`, simplemente la marca como cancelada (no hay consumos que revertir)
-- Registra la fecha de cancelacion
+### Filtros en la lista de lotes
 
-### 4.4 Flujo de ajuste de inventario
-
-```
-Se detecta diferencia entre stock teorico y conteo fisico
-         ↓
-Admin/Gerente va a Movimientos > Nuevo
-         ↓
-Selecciona: Insumo, Tipo=Ajuste, Cantidad (+ o -), Motivo
-         ↓
-Sistema ajusta el stock
-```
-
-### 4.5 Flujo de alerta de stock bajo
-
-```
-El stock de un insumo baja a ≤ stock_minimo
-         ↓
-Dashboard muestra la alerta en la seccion "Stock Bajo"
-         ↓
-Admin/Gerente decide: comprar mas o ajustar el minimo
-         ↓
-Registra entrada cuando llega el reabastecimiento
-```
+La lista de lotes permite filtrar por:
+- **Vencidos** — lotes cuya fecha de vencimiento ya paso
+- **Por vencer** — lotes que venceran en los proximos 30 dias
 
 ---
 
-## 5. Casos de uso
+## 10. Ordenes de produccion
 
-### CU-01: Login al sistema
+### ¿Que es una orden de produccion?
 
-| | |
-|---|---|
-| **Actor** | Cualquier usuario registrado |
-| **Precondicion** | Cuenta activa con organizacion activa |
-| **Flujo** | 1. Usuario ingresa username y password → 2. Sistema valida credenciales → 3. Redirige al dashboard |
-| **Flujo alterno** | Credenciales invalidas → muestra error "Usuario o contraseña incorrectos" |
-| **Flujo alterno** | Organizacion suspendida → redirige a pantalla "cuenta suspendida" |
+Una orden de produccion (OP) documenta el proceso de preparar un reactivo. Registra que se va a preparar, cuanto, cuando, quien lo hizo y que insumos se usaron.
 
-### CU-02: Registrar entrada de insumos
+### Ciclo de vida de una orden
 
-| | |
-|---|---|
-| **Actor** | Admin o Gerente |
-| **Precondicion** | Insumo y proveedor deben existir en el sistema |
-| **Flujo** | 1. Ir a Movimientos > Nuevo → 2. Seleccionar insumo, tipo "Entrada", cantidad, proveedor, lote → 3. Guardar → 4. Stock se actualiza automaticamente |
-| **Resultado** | Stock del insumo incrementa en la cantidad registrada |
+Una orden pasa por estos estados:
 
-### CU-03: Crear reactivo con receta
+```
+PLANIFICADA  →  EN PROCESO  →  COMPLETADA
+                    ↓
+                CANCELADA
+```
 
-| | |
-|---|---|
-| **Actor** | Admin o Gerente |
-| **Precondicion** | Insumos y unidades deben existir |
-| **Flujo** | 1. Ir a Reactivos > Nuevo → 2. Llenar datos basicos + instrucciones → 3. Guardar → 4. En el detalle del reactivo, agregar items de receta (insumo + cantidad + unidad) |
-| **Resultado** | Reactivo disponible para ordenes de produccion |
+### Crear una orden
 
-### CU-04: Producir un reactivo (ciclo completo)
+Vaya a **Produccion > Nueva orden** y complete:
 
-| | |
-|---|---|
-| **Actor** | Admin o Gerente |
-| **Precondicion** | Reactivo con receta definida, stock suficiente de insumos |
-| **Flujo** | 1. Ir a Ordenes > Nueva → 2. Seleccionar reactivo, lote, cantidad → 3. Guardar (estado: Planificada) → 4. Revisar detalle (muestra insumos necesarios vs stock disponible) → 5. Click "Iniciar produccion" → 6. Sistema consume insumos automaticamente (estado: En proceso) → 7. Cuando el tecnico termina, click "Completar" (estado: Completada) |
-| **Flujo alterno** | Stock insuficiente → sistema muestra que insumos faltan y cuanto |
-| **Flujo alterno** | Cancelar orden en proceso → sistema revierte consumos |
+| Campo | Descripcion | Ejemplo |
+|-------|-------------|---------|
+| Reactivo | Que va a preparar | Solucion de Turk |
+| Numero de lote | Identificador de esta preparacion | TURK-2026-05-001 |
+| Cantidad | Cuanto va a preparar | 500 |
+| Observaciones | Notas del proceso | Preparacion para stock mensual |
 
-### CU-05: Consultar stock de un insumo
+La orden se crea en estado **Planificada**.
 
-| | |
-|---|---|
-| **Actor** | Cualquier usuario autenticado (incluyendo staff) |
-| **Flujo** | 1. Ir a Insumos → 2. Lista muestra nombre, codigo, categoria, stock actual, estado → 3. Click en un insumo → 4. Detalle muestra ficha completa + historial de movimientos |
-| **Resultado** | Usuario ve stock actual y su historial |
+### Ver detalle de la orden
 
-### CU-06: Verificar alertas de stock bajo
+En el detalle de la orden puede ver:
+- Datos de la orden (reactivo, cantidad, estado, fechas)
+- Lista de insumos necesarios con la cantidad requerida y el stock disponible de cada uno
+- Si todos los insumos tienen stock suficiente (indicadores verdes) o si falta algo (indicadores rojos)
+- Timeline visual del progreso de la orden
 
-| | |
-|---|---|
-| **Actor** | Cualquier usuario autenticado |
-| **Flujo** | 1. Ir al Dashboard → 2. Ver KPI "Stock bajo" → 3. Ver lista de insumos por debajo del minimo |
-| **Resultado** | Decision de reabastecimiento |
+### Iniciar produccion
 
-### CU-07: Marcar notificaciones como leidas
+1. Abra el detalle de la orden
+2. Verifique que todos los insumos tienen stock suficiente (indicadores verdes)
+3. Haga clic en **"Iniciar produccion"**
 
-| | |
-|---|---|
-| **Actor** | Cualquier usuario autenticado |
-| **Flujo** | 1. Click en icono de notificaciones en la barra → 2. Click en una notificacion individual o "Marcar todas como leidas" |
+El sistema automaticamente:
+- Descuenta de cada insumo la cantidad necesaria segun la receta
+- Cambia el estado a **En proceso**
+- Registra la fecha y hora de inicio
 
----
+**Si no hay stock suficiente** de algun insumo, el sistema le indicara cual falta y cuanto necesita. No podra iniciar la produccion hasta resolver el faltante.
 
-## 6. Guia operativa por pantalla
+### Completar produccion
 
-### 6.1 Login (/login/)
+Cuando el reactivo este preparado y listo:
 
-- Campos: usuario y contraseña
-- Boton "Iniciar sesion"
-- Si el usuario ya esta logueado, redirige automaticamente al dashboard
+1. Abra el detalle de la orden
+2. Haga clic en **"Completar"**
 
-### 6.2 Dashboard (/lab/)
+El sistema automaticamente:
+- Crea un lote nuevo del reactivo producido
+- Registra la entrada del reactivo al inventario (la cantidad producida)
+- Cambia el estado a **Completada**
+- Registra la fecha y hora de finalizacion
 
-- 5 tarjetas KPI: insumos, reactivos, stock bajo, ordenes pendientes, ordenes en proceso
-- Pipeline visual de ordenes por estado
-- Tabla de alertas de stock bajo
-- Tabla de ultimos 10 movimientos
+### Cancelar una orden
 
-### 6.3 Categorias (/lab/categories/)
+Si necesita cancelar una orden:
 
-- Tabla con nombre y descripcion
-- Botones: Nueva (modal), Editar (modal), Eliminar (confirmacion)
-- Soporte HTMX: la tabla se recarga sin refrescar la pagina
+1. Abra el detalle de la orden
+2. Haga clic en **"Cancelar"**
 
-### 6.4 Unidades de medida (/lab/uoms/)
+**Si la orden estaba en proceso**, el sistema devuelve automaticamente los insumos que se habian descontado (crea movimientos de entrada compensatorios). Nada se pierde.
 
-- Tabla con nombre y abreviatura
-- Misma mecanica que categorias (modales HTMX)
-
-### 6.5 Proveedores (/lab/suppliers/)
-
-- Tabla con nombre, RIF, contacto, telefono, email, estado
-- Busqueda por nombre o RIF
-- Formulario completo en pagina separada (no modal)
-
-### 6.6 Insumos (/lab/supplies/)
-
-- Tabla con codigo, nombre, categoria, unidad, stock actual, estado
-- Busqueda por nombre o codigo
-- Indicadores visuales de stock (bajo=rojo, ok=verde, alto=amarillo)
-- Click en nombre abre detalle con historial de movimientos
-
-### 6.7 Reactivos (/lab/reagents/)
-
-- Tabla con codigo, nombre, rendimiento, control por lote, estado
-- Busqueda por nombre o codigo
-- Detalle muestra: ficha + receta (items) + historial de ordenes de produccion
-- Desde el detalle se agregan/eliminan items de receta
-
-### 6.8 Movimientos (/lab/movements/)
-
-- Tabla con fecha, insumo, tipo, cantidad, lote, proveedor, motivo, usuario
-- Filtros: busqueda por texto y filtro por tipo (entrada/salida/ajuste)
-- Formulario de nuevo movimiento en pagina separada
-
-### 6.9 Ordenes de produccion (/lab/orders/)
-
-- Tabla con lote, reactivo, cantidad, estado, creado por, fecha
-- Filtro por estado
-- Detalle muestra: datos de la orden + insumos necesarios (con stock disponible) + timeline visual del ciclo de vida + movimientos asociados
-- Acciones contextuales: Iniciar (si planned), Completar (si in_progress), Cancelar (si planned o in_progress)
+**Si la orden estaba planificada**, simplemente se marca como cancelada (no habia consumido nada).
 
 ---
 
-## 7. Auditoria interna
+## 11. Notificaciones
 
-### 7.1 Analisis de la logica implementada
+El sistema genera notificaciones automaticas cuando ocurren eventos importantes:
 
-#### Lo que FUNCIONA correctamente:
+### Notificaciones automaticas
 
-**Multi-tenant (aislamiento de datos):** SOLIDO
-- Cada query usa `.for_tenant(request.tenant)` — no hay filtraciones entre organizaciones
-- Los formularios filtran sus dropdowns por tenant
-- El middleware inyecta `request.tenant` automaticamente
-- Constraint a nivel de base de datos garantiza que solo superadmins pueden no tener organizacion
-- El admin de Django filtra por organizacion
-- Auditado y corregido: 7 vulnerabilidades multi-tenant fueron corregidas en mayo 2026
+- **Stock bajo** — cuando un insumo o reactivo baja de su nivel minimo despues de un movimiento
+- **Orden completada** — cuando una orden de produccion se completa exitosamente
+- **Orden cancelada** — cuando una orden de produccion se cancela
 
-**Calculo de stock:** CORRECTO
-- Stock se calcula sumando movimientos (patron event-sourcing), no se guarda como campo editable
-- Esto garantiza que el stock siempre es consistente con el historial
-- Las salidas se almacenan como negativas, lo que simplifica la suma
+### Ver notificaciones
 
-**Ciclo de produccion:** LOGICO Y COMPLETO
-- Los 4 estados cubren todo el ciclo de vida real
-- La verificacion de stock previene iniciar sin insumos suficientes
-- La cancelacion revierte consumos con movimientos compensatorios (no elimina los originales), preservando la trazabilidad
-- El calculo proporcional de insumos (factor = cantidad / yield) es matematicamente correcto
-
-**Borrado logico:** BIEN IMPLEMENTADO
-- Insumos y reactivos usan soft-delete (no se pierden historicos)
-- Los movimientos NO se borran nunca (inmutabilidad para auditoria)
-
-**Permisos:** ADECUADOS
-- Separacion clara lectura (staff+) vs escritura (admin/manager+)
-- Superadmin siempre tiene acceso
-- Decoradores reutilizables (`role_required`, `tenant_required`)
-
-#### PROBLEMAS detectados y GAPS funcionales:
-
-**P1 — No hay stock de reactivos producidos (CRITICO FUNCIONAL)**
-- El sistema consume insumos al producir pero NO registra la entrada del reactivo producido
-- Cuando se completa una OP de "5L de NaOH 0.1M", se restan los insumos pero no hay registro de que ahora hay 5L de NaOH disponible
-- El modelo `Reagent` no tiene campo de stock ni movimientos propios
-- **Impacto:** Un laboratorio no puede saber cuanto reactivo preparado tiene disponible. El sistema solo es util como gestor de insumos, no como gestor completo de produccion
-- **Solucion:** Crear un modelo `ReagentStock` o extender `StockMovement` para incluir productos terminados, o agregar movimientos de "entrada" vinculados al reactivo producido
-
-**P2 — No hay fecha de vencimiento en insumos ni reactivos (ALTO)**
-- Un laboratorio clinico trabaja con fechas de caducidad en TODOS sus insumos
-- No hay campo `expiration_date` en Supply ni en lotes
-- **Impacto:** No se puede alertar sobre insumos proximos a vencer, que es una necesidad critica en un laboratorio clinico regulado
-- **Solucion:** Agregar `expiration_date` a `Supply` (o mejor, a nivel de lote/batch)
-
-**P3 — No hay gestion de lotes real (ALTO)**
-- Existe `tracks_batch` como flag y `batch_number` como texto libre en movimientos
-- Pero no hay un modelo `Batch` que agrupe movimientos de un mismo lote
-- No se puede consultar "cuanto queda del lote X" ni "que lotes tengo de insumo Y"
-- **Impacto:** La trazabilidad por lote es cosmética — el numero esta ahi, pero no tiene funcionalidad
-- **Solucion:** Crear modelo `Batch` con FK a Supply + fecha_vencimiento + stock por lote
-
-**P4 — El stock puede ser negativo sin restriccion (MEDIO)**
-- `production_order_start` verifica stock antes de consumir, PERO `StockMovementCreateView` no verifica
-- Un admin puede registrar una salida manual mayor que el stock disponible
-- **Impacto:** Stock teorico negativo, inconsistencia con la realidad
-- **Solucion:** Validacion en el form o en `StockMovement.save()` para salidas
-
-**P5 — Movimientos manuales no se pueden vincular a ordenes (BAJO)**
-- `StockMovementCreateView` no expone el campo `production_order` en el form
-- Esto es correcto (las salidas automaticas si lo vinculan), pero no se puede registrar una salida manual vinculada a una OP si es necesario
-
-**P6 — No hay reportes ni exportaciones (MEDIO)**
-- No hay generacion de PDF (certificados de analisis, reportes de stock)
-- No hay exportacion CSV/Excel
-- **Impacto:** El personal debe copiar datos manualmente para reportes
-
-**P7 — No hay historial de cambios/audit trail por usuario (MEDIO)**
-- Se sabe quien creo un movimiento o una OP, pero no quien edito un insumo o reactivo
-- `updated_at` existe pero no `updated_by`
-- **Impacto:** No hay trazabilidad completa de quien modifico que
-
-**P8 — No hay password reset (CONOCIDO, en plan L2)**
-- Un usuario que olvida su contraseña no puede recuperarla
-- Requiere intervencion del admin
-
-**P9 — Notificaciones no se generan automaticamente (BAJO)**
-- El modelo `Notification` existe pero no hay signals ni logica que cree notificaciones
-- No se notifica automaticamente cuando hay stock bajo, cuando se completa una OP, etc.
-- Las notificaciones solo existen si se crean manualmente (via admin o script)
-
-**P10 — Proveedor inactivo NO esta filtrado en el form de movimientos (BAJO)**
-- `SupplierForm` no filtra `is_active=True`
-- El dropdown de proveedor al crear un movimiento muestra proveedores inactivos
-
-### 7.2 Analisis de factibilidad y utilidad real
-
-#### ¿Es util este sistema para un laboratorio clinico?
-
-**SI, pero con limitaciones importantes.** En su estado actual (v1.0), CMCR Lab es:
-
-**Un buen gestor de insumos (materias primas):**
-- Sabe cuanto tiene de cada insumo
-- Alerta cuando algo esta bajo
-- Registra de donde viene cada insumo (proveedor, lote)
-- Documenta cada movimiento
-
-**Un buen planificador de produccion:**
-- Define recetas reproducibles
-- Calcula automaticamente cuanto insumo necesita
-- Verifica disponibilidad antes de producir
-- Consume stock automaticamente
-
-**NO es (todavia) un sistema completo de laboratorio clinico:**
-- No gestiona el stock de reactivos producidos (P1)
-- No controla vencimientos (P2)
-- No tiene trazabilidad de lote real (P3)
-- No genera certificados de analisis ni reportes (P6)
-- No tiene firma electronica ni audit trail completo (P7)
-
-#### Comparacion con alternativas
-
-| Caracteristica | CMCR Lab | Excel/manual | Software de laboratorio comercial |
-|---|---|---|---|
-| Control de stock insumos | Si | Parcial, propenso a errores | Si |
-| Recetas de reactivos | Si (automatico) | Manual | Si |
-| Consumo automatico al producir | Si | No | Si |
-| Multi-usuario concurrente | Si | No (conflictos de archivo) | Si |
-| Vencimientos | No | Manual | Si |
-| Certificados de analisis | No | Manual | Si |
-| Costo | Incluido en servicio | $0 | $500-5000/mes |
-| Personalizacion | Total | Total | Limitada |
-
-#### Conclusion de factibilidad
-
-El sistema es **viable y util como MVP** (Minimo Producto Viable) para un laboratorio que:
-1. Necesita salir de Excel para controlar insumos
-2. Quiere automatizar el consumo al producir reactivos
-3. Necesita que multiples personas accedan a la misma informacion
-4. Valora la trazabilidad de movimientos
-
-Para ser un **sistema de laboratorio completo** (LIMS), necesitaria los items P1-P3 y P6 como minimo. Estos conformarian un "Bloque L6" de features clinicas que ya esta planificado.
-
-### 7.3 Priorizacion recomendada de mejoras
-
-| Prioridad | Item | Esfuerzo | Impacto |
-|-----------|------|----------|---------|
-| 1 | P8: Password reset (L2) | 1.5h | Entregable |
-| 2 | P1: Stock de reactivos producidos | 3-4h | Critico funcional |
-| 3 | P2: Fechas de vencimiento | 2-3h | Alto para lab clinico |
-| 4 | P3: Gestion de lotes real | 3-4h | Alto para trazabilidad |
-| 5 | P4: Validacion stock negativo | 1h | Integridad de datos |
-| 6 | P9: Notificaciones automaticas | 2h | UX |
-| 7 | P6: Reportes PDF/CSV | 4-5h | Operativo |
-| 8 | P7: Audit trail por usuario | 2h | Compliance |
-| 9 | P10: Filtrar proveedores inactivos | 15min | Calidad |
+- El icono de campana en la barra superior muestra cuantas notificaciones sin leer tiene
+- Haga clic en el icono para ver la lista
+- Puede marcar notificaciones como leidas individualmente o todas a la vez
 
 ---
 
-*Documento generado: Mayo 2026*
-*Sistema desarrollado por: Ukarasoft Technology (partner: SmartSolutions)*
+## 12. Exportacion de datos
+
+El sistema permite exportar datos a archivos CSV (compatibles con Excel) para generar reportes externos.
+
+### Exportaciones disponibles
+
+| Exportacion | Que incluye | Donde encontrarla |
+|-------------|-------------|-------------------|
+| Insumos | Lista completa con stock actual, categoria, unidad | Inventario > Insumos > Exportar CSV |
+| Movimientos | Historial de todos los movimientos | Movimientos > Exportar CSV |
+| Ordenes | Todas las ordenes de produccion | Produccion > Exportar CSV |
+| Lotes | Lista de lotes con stock y vencimiento | Lotes > Exportar CSV |
+
+### Como exportar
+
+1. Vaya a la seccion correspondiente
+2. Haga clic en el boton **"Exportar CSV"**
+3. Se descargara un archivo que puede abrir con Excel, Google Sheets o LibreOffice
+
+---
+
+## 13. Recuperacion de contrasena
+
+Si olvido su contrasena:
+
+1. Vaya a la pantalla de inicio de sesion
+2. Haga clic en **"¿Olvidaste tu contrasena?"**
+3. Ingrese el correo electronico asociado a su cuenta
+4. Revise su bandeja de entrada (tambien la carpeta de spam)
+5. Haga clic en el enlace del correo
+6. Escriba su nueva contrasena dos veces
+7. Haga clic en **"Cambiar contrasena"**
+
+**Notas:**
+- El enlace de recuperacion es valido por 1 hora
+- Si no recibe el correo, verifique que el correo ingresado es el correcto
+- Por seguridad, el sistema no informa si el correo existe o no en la base de datos
+- Si sigue sin poder acceder, contacte al administrador del sistema
+
+---
+
+## 14. Preguntas frecuentes
+
+### ¿Por que no puedo editar un movimiento?
+
+Los movimientos son inmutables por diseno. Esto garantiza que el historial es confiable y auditable. Si cometio un error, registre un movimiento de ajuste para corregir la diferencia.
+
+### ¿Que pasa si el stock del sistema no coincide con el conteo fisico?
+
+Registre un movimiento de tipo **Ajuste** con la diferencia. Por ejemplo: si el sistema dice 500 mL pero fisicamente hay 450 mL, registre un ajuste de -50 mL con el motivo "Ajuste por conteo fisico".
+
+### ¿Puedo eliminar un insumo que ya tiene movimientos?
+
+Si. Al "eliminar" un insumo, este se oculta de las listas pero toda su informacion historica se conserva. Los movimientos existentes no se afectan.
+
+### ¿Que pasa si intento iniciar una produccion sin stock suficiente?
+
+El sistema le mostrara exactamente que insumos faltan y cuanto necesita de cada uno. No podra iniciar la produccion hasta que el stock sea suficiente.
+
+### ¿Puedo cancelar una orden que ya esta en proceso?
+
+Si. Al cancelar una orden en proceso, el sistema devuelve automaticamente todos los insumos que se habian descontado. Es seguro cancelar en cualquier momento.
+
+### ¿Quien puede ver mis movimientos?
+
+Solo los usuarios de su misma institucion pueden ver los datos. Cada usuario ve unicamente la informacion de su centro.
+
+### ¿Puedo usar el sistema desde el celular?
+
+Si. El sistema se adapta a pantallas de cualquier tamano. Puede acceder desde el navegador de su celular o tablet.
+
+### ¿Como se que un lote esta por vencer?
+
+El Dashboard muestra automaticamente los lotes que venceran en los proximos 30 dias. Ademas, puede ir a **Lotes** y filtrar por "Por vencer" o "Vencidos".
+
+---
+
+*Centro Clinico Madre Carmen Rendiles*
+*Sistema desarrollado por SmartSolutions*
+*Version 2.0 — Mayo 2026*
