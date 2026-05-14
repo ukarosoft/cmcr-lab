@@ -534,12 +534,13 @@ class StockMovementListView(StaffOrAboveMixin, ListView):
     def get_queryset(self):
         qs = (
             StockMovement.objects.for_tenant(self.request.tenant)
-            .select_related('supply', 'supplier', 'production_order', 'created_by')
+            .select_related('supply', 'reagent', 'supplier', 'production_order', 'created_by')
             .order_by('-created_at')
         )
         if q := self.request.GET.get('q'):
             qs = qs.filter(
                 Q(supply__name__icontains=q) |
+                Q(reagent__name__icontains=q) |
                 Q(batch_number__icontains=q) |
                 Q(supplier__name__icontains=q)
             )
@@ -627,7 +628,7 @@ class ProductionOrderDetailView(StaffOrAboveMixin, DetailView):
         ctx['movements'] = (
             StockMovement.objects.for_tenant(self.request.tenant)
             .filter(production_order=self.object)
-            .select_related('supply', 'supplier')
+            .select_related('supply', 'reagent', 'supplier')
         )
         # Calcular insumos necesarios para la orden
         base_yield = self.object.reagent.yield_quantity

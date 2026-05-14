@@ -309,7 +309,7 @@
                 <table class="table-pro">
                     <thead>
                         <tr>
-                            <th scope="col">Insumo</th>
+                            <th scope="col">Insumo / Reactivo</th>
                             <th scope="col" class="col-num">Cantidad</th>
                             <th scope="col">Tipo</th>
                             <th scope="col">Registrado por</th>
@@ -318,7 +318,7 @@
                     <tbody>
                         {% for m in recent_movements %}
                         <tr>
-                            <td><div style="font-weight: 500; color: var(--text-primary);">{{ m.supply.name }}</div></td>
+                            <td><div style="font-weight: 500; color: var(--text-primary);">{% if m.supply %}{{ m.supply.name }}{% elif m.reagent %}{{ m.reagent.name }} <span class="status-pill status-pill--ok" style="font-size: var(--text-xs);">Reactivo</span>{% endif %}</div></td>
                             <td class="col-num">
                                 <span style="font-family: var(--font-mono); font-weight: 700;
                                              color: {% if m.quantity < 0 %}var(--color-danger-600){% else %}var(--color-secondary-500){% endif %};">
