@@ -3,7 +3,7 @@ import pytest
 
 from apps.notifications.models import Notification
 from apps.notifications.tests.factories import NotificationFactory
-from apps.lab_inventory.tests.factories import OrganizationFactory, UserFactory
+from apps.lab_inventory.tests.factories import OrganizationFactory
 
 pytestmark = pytest.mark.django_db
 

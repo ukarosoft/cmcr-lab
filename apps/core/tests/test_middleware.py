@@ -5,7 +5,6 @@ manejo de org inactiva, redirecciones.
 import pytest
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import AnonymousUser
-from django.test import RequestFactory
 
 from apps.core.middleware import TenantMiddleware
 
@@ -64,7 +63,6 @@ class TestTenantMiddlewareWithOrg:
     def test_usuario_sin_org_redirige_a_login(self, db, rf):
         """El constraint BD impide crear staff sin org — el middleware redirige
         en el edge case de org=None (ej: superadmin con rol no-superadmin vía admin)."""
-        import pytest
         from django.db import IntegrityError
         from apps.core.models import User
         # Verificamos que el constraint funciona: staff sin org viola la BD

@@ -1,7 +1,7 @@
 import csv
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Q
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import (
     ListView, CreateView, UpdateView, DeleteView, DetailView,
 )
-from apps.core.decorators import role_required, tenant_required
+from apps.core.decorators import role_required
 from .models import (
     Category, UnitOfMeasure, Supplier, Supply,
     Reagent, ReagentItem, Batch, ProductionOrder, StockMovement,

@@ -3,7 +3,6 @@ from decimal import Decimal
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from apps.core.models import Organization, User
 from apps.lab_inventory.models import (
     Category,
     UnitOfMeasure,

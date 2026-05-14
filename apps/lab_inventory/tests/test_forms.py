@@ -4,7 +4,6 @@ Foco: garantizar que los forms con argumento `tenant=` filtran sus
 querysets de FK por organización. Esto previene bugs cross-org si una
 vista futura olvida pasar tenant o si se usan los forms desde otro lugar.
 """
-from decimal import Decimal
 
 import pytest
 

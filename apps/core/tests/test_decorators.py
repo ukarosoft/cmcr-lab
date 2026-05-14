@@ -1,11 +1,9 @@
 """
 Tests de decoradores: role_required, superadmin_required, tenant_required.
 """
-import pytest
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse
-from django.test import RequestFactory
 
 from apps.core.decorators import role_required, superadmin_required, tenant_required
 
