@@ -40,18 +40,25 @@ class Command(BaseCommand):
         su_email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@ukarasoft.com')
         su_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
 
-        if su_password and not User.objects.filter(username=su_username).exists():
-            User.objects.create_user(
+        if su_password:
+            user, created = User.objects.get_or_create(
                 username=su_username,
-                email=su_email,
-                password=su_password,
-                role='superadmin',
-                is_staff=True,
-                is_superuser=True,
+                defaults={
+                    'email': su_email,
+                    'role': 'superadmin',
+                    'is_staff': True,
+                    'is_superuser': True,
+                },
             )
-            self.stdout.write(self.style.SUCCESS(f'✓ Superadmin creado: {su_username}'))
-        elif User.objects.filter(username=su_username).exists():
-            self.stdout.write(f'• Superadmin ya existía: {su_username}')
+            if created:
+                user.set_password(su_password)
+                user.save()
+                self.stdout.write(self.style.SUCCESS(f'✓ Superadmin creado: {su_username}'))
+            else:
+                user.set_password(su_password)
+                user.email = su_email
+                user.save()
+                self.stdout.write(f'• Superadmin actualizado: {su_username}')
         else:
             self.stdout.write(self.style.WARNING(
                 '⚠ DJANGO_SUPERUSER_PASSWORD no configurado — superadmin no creado'
@@ -62,19 +69,25 @@ class Command(BaseCommand):
         admin_email = os.environ.get('CMCR_ADMIN_EMAIL', 'admin@cmcr.local')
         admin_password = os.environ.get('CMCR_ADMIN_PASSWORD', 'admin123')
 
-        if not User.objects.filter(username=admin_username).exists():
-            User.objects.create_user(
-                username=admin_username,
-                email=admin_email,
-                password=admin_password,
-                organization=org,
-                role='admin',
-                first_name='Administrador',
-                last_name='CMCR',
-            )
+        user, created = User.objects.get_or_create(
+            username=admin_username,
+            defaults={
+                'email': admin_email,
+                'organization': org,
+                'role': 'admin',
+                'first_name': 'Administrador',
+                'last_name': 'CMCR',
+            },
+        )
+        if created:
+            user.set_password(admin_password)
+            user.save()
             self.stdout.write(self.style.SUCCESS(f'✓ Admin CMCR creado: {admin_username}'))
         else:
-            self.stdout.write(f'• Admin ya existía: {admin_username}')
+            user.set_password(admin_password)
+            user.organization = org
+            user.save()
+            self.stdout.write(f'• Admin CMCR actualizado: {admin_username}')
 
         # 4. Datos demo (idempotente — seed_demo usa get_or_create)
         if os.environ.get('LOAD_DEMO_DATA', 'true').lower() in ('1', 'true', 'yes'):
