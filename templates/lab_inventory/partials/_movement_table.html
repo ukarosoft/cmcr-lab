@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th scope="col" style="width: 9rem;">Fecha</th>
-            <th scope="col">Insumo</th>
+            <th scope="col">Insumo / Reactivo</th>
             <th scope="col">Tipo</th>
             <th scope="col" class="col-num">Cantidad</th>
             <th scope="col">Lote</th>
@@ -17,9 +17,16 @@
                 <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ m.created_at|date:"H:i" }}</div>
             </td>
             <td>
+                {% if m.supply %}
                 <a href="{% url 'lab_inventory:supply_detail' m.supply.pk %}" style="color: var(--text-primary); font-weight: 500; text-decoration: none;">
                     {{ m.supply.name }}
                 </a>
+                {% elif m.reagent %}
+                <a href="{% url 'lab_inventory:reagent_detail' m.reagent.pk %}" style="color: var(--text-primary); font-weight: 500; text-decoration: none;">
+                    {{ m.reagent.name }}
+                </a>
+                <span class="status-pill status-pill--ok" style="font-size: var(--text-xs); margin-left: 4px;">Reactivo</span>
+                {% endif %}
             </td>
             <td>
                 {% if m.movement_type == 'entry' %}
@@ -34,7 +41,7 @@
                 <span style="font-family: var(--font-mono); font-weight: 700; color: {% if m.quantity < 0 %}var(--color-danger-600){% else %}var(--color-secondary-500){% endif %};">
                     {% if m.quantity > 0 %}+{% endif %}{{ m.quantity|floatformat:"-2" }}
                 </span>
-                <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ m.supply.unit.abbreviation }}</span>
+                <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{% if m.supply %}{{ m.supply.unit.abbreviation }}{% elif m.reagent %}{{ m.reagent.yield_unit.abbreviation }}{% endif %}</span>
             </td>
             <td>
                 {% if m.batch_number %}
