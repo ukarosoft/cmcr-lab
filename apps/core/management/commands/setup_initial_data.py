@@ -86,6 +86,9 @@ class Command(BaseCommand):
         else:
             user.set_password(admin_password)
             user.organization = org
+            user.role = 'admin'
+            user.is_superuser = False
+            user.is_staff = False
             user.save()
             self.stdout.write(f'• Admin CMCR actualizado: {admin_username}')
 

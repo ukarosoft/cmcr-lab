@@ -219,11 +219,11 @@
                         <tr>
                             <td style="font-weight: 500;">{{ item.supply.name }}</td>
                             <td class="col-num">
-                                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">{{ item.required_qty|floatformat:4 }}</span>
+                                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">{{ item.required_qty|floatformat:"-2" }}</span>
                                 <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ item.unit.abbreviation }}</span>
                             </td>
                             <td class="col-num">
-                                <span style="font-family: var(--font-mono); color: var(--text-secondary);">{{ item.current_stock|floatformat:4 }}</span>
+                                <span style="font-family: var(--font-mono); color: var(--text-secondary);">{{ item.current_stock|floatformat:"-2" }}</span>
                                 <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ item.supply.unit.abbreviation }}</span>
                             </td>
                             <td>

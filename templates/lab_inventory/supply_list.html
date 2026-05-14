@@ -41,6 +41,10 @@
                 <span class="spinner" style="width: .875rem; height: .875rem; border-width: 1.5px;"></span>
                 Buscando…
             </span>
+            <a href="{% url 'lab_inventory:export_supplies' %}" class="btn-ghost" style="margin-left: auto; white-space: nowrap;">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Exportar CSV
+            </a>
         </div>
 
         <div id="supply-table" class="table-wrap">

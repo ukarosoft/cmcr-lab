@@ -186,10 +186,10 @@
                         </div>
                         <div style="text-align: right; flex-shrink: 0;">
                             <div style="font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 700; color: var(--color-danger-600); font-variant-numeric: tabular-nums;">
-                                {{ s.current_stock }} {{ s.unit.abbreviation }}
+                                {{ s.current_stock|floatformat:"-2" }} {{ s.unit.abbreviation }}
                             </div>
                             <div style="font-size: var(--text-xs); color: var(--text-muted);">
-                                mín. {{ s.stock_min }} {{ s.unit.abbreviation }}
+                                mín. {{ s.stock_min|floatformat:"-2" }} {{ s.unit.abbreviation }}
                             </div>
                         </div>
                     </a>
@@ -322,7 +322,7 @@
                             <td class="col-num">
                                 <span style="font-family: var(--font-mono); font-weight: 700;
                                              color: {% if m.quantity < 0 %}var(--color-danger-600){% else %}var(--color-secondary-500){% endif %};">
-                                    {% if m.quantity > 0 %}+{% endif %}{{ m.quantity }}
+                                    {% if m.quantity > 0 %}+{% endif %}{{ m.quantity|floatformat:"-2" }}
                                 </span>
                             </td>
                             <td>

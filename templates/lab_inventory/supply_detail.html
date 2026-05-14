@@ -79,7 +79,7 @@
                 </div>
                 <div class="kpi-label">Stock actual</div>
                 <div class="kpi-value {% if stock_status == 'low' %}kpi-value--danger{% elif stock_status == 'high' %}{% else %}kpi-value--success{% endif %}">
-                    {{ current_stock }}
+                    {{ current_stock|floatformat:"-2" }}
                     <span style="font-size: var(--text-base); font-weight: 500; color: var(--text-muted);">{{ supply.unit.abbreviation }}</span>
                 </div>
                 <div class="kpi-delta">

@@ -32,7 +32,7 @@
             </td>
             <td class="col-num">
                 <span style="font-family: var(--font-mono); font-weight: 700; color: {% if m.quantity < 0 %}var(--color-danger-600){% else %}var(--color-secondary-500){% endif %};">
-                    {% if m.quantity > 0 %}+{% endif %}{{ m.quantity }}
+                    {% if m.quantity > 0 %}+{% endif %}{{ m.quantity|floatformat:"-2" }}
                 </span>
                 <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ m.supply.unit.abbreviation }}</span>
             </td>

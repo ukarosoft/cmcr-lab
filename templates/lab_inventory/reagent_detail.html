@@ -119,11 +119,11 @@
                                 </a>
                             </td>
                             <td class="col-num">
-                                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">{{ item.quantity }}</span>
+                                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">{{ item.quantity|floatformat:"-2" }}</span>
                                 <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ item.unit.abbreviation }}</span>
                             </td>
                             <td>
-                                <span style="font-family: var(--font-mono); color: var(--text-secondary); font-size: var(--text-sm);">{{ item.supply.current_stock }}</span>
+                                <span style="font-family: var(--font-mono); color: var(--text-secondary); font-size: var(--text-sm);">{{ item.supply.current_stock|floatformat:"-2" }}</span>
                                 <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ item.supply.unit.abbreviation }}</span>
                             </td>
                             <td style="font-size: var(--text-xs); color: var(--text-muted);">{{ item.notes|default:'—' }}</td>

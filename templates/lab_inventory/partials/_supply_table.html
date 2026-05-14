@@ -30,7 +30,7 @@
             </td>
             <td class="col-num">
                 <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">
-                    {{ s.current_stock }}
+                    {{ s.current_stock|floatformat:"-2" }}
                 </span>
                 <span style="color: var(--text-muted); font-size: var(--text-xs); margin-left: 2px;">{{ s.unit.abbreviation }}</span>
             </td>
